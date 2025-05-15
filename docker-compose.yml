@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  postgres_ong:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: ongdb
+    restart: always
+    ports:
+      - "5433:5432"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - postgres_data_ong:/var/lib/postgresql/data
+    networks:
+      - ong_network
+
+  pgadmin_ong:
+    image: dpage/pgadmin4:9.3
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    restart: always
+    ports:
+      - "15432:80"
+    volumes:
+      - pgadmin_data_ong:/var/lib/pgadmin
+    depends_on:
+      postgres_ong:
+        condition: service_healthy
+    networks:
+      - ong_network
+
+volumes:
+  postgres_data_ong:
+  pgadmin_data_ong:
+
+networks:
+  ong_network:
