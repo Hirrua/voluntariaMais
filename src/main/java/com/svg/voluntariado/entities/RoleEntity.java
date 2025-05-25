@@ -3,6 +3,9 @@ package com.svg.voluntariado.entities;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.HashSet;
+import java.util.Set;
+
 @Getter
 @Setter
 @EqualsAndHashCode(of = "id")
@@ -19,4 +22,7 @@ public class RoleEntity {
 
     @Column(length = 30, nullable = false, unique = true)
     private String nome;
+
+    @ManyToMany(mappedBy = "roles")
+    private Set<UsuarioEntity> usuarios = new HashSet<>();
 }
