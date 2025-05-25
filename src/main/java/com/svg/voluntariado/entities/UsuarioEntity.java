@@ -1,0 +1,80 @@
+package com.svg.voluntariado.entities;
+
+import com.svg.voluntariado.enums.TipoUsuarioEnum;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
+import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+
+import java.time.OffsetDateTime;
+import java.util.HashSet;
+import java.util.Set;
+
+@Getter
+@Setter
+@EqualsAndHashCode(of = "id")
+@AllArgsConstructor
+@NoArgsConstructor
+@Entity
+@Table(name = "tb_usuarios")
+public class UsuarioEntity {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id_usuario")
+    private Long id;
+
+    @Column(length = 60, nullable = false)
+    private String nome;
+
+    @Column(length = 60, nullable = false)
+    private String sobrenome;
+
+    @Email
+    @Column(length = 40, nullable = false, unique = true)
+    private String email;
+
+    @Column(nullable = false)
+    private String senha;
+
+    @Column(length = 11, nullable = false)
+    private String cpf;
+
+    @Embedded
+    @AttributeOverrides({
+            @AttributeOverride(name = "logradouro", column = @Column(name = "logradouro_usuario", length = 60)),
+            @AttributeOverride(name = "bairro", column = @Column(name = "bairro_usuario", length = 60)),
+            @AttributeOverride(name = "complemento", column = @Column(name = "complemento_usuario", length = 60)),
+            @AttributeOverride(name = "cidade", column = @Column(name = "cidade_usuario", length = 60)),
+            @AttributeOverride(name = "estado", column = @Column(name = "estado_usuario", length = 2)),
+            @AttributeOverride(name = "cep", column = @Column(name = "cep_usuario", length = 8)),
+    })
+    private EnderecoEntity endereco;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "tipo_usuario_enum", nullable = false)
+    private TipoUsuarioEnum tipoUsuarioEnum;
+
+    private boolean ativo = true;
+
+    @CreationTimestamp
+    @Column(name = "data_cadastro", nullable = false, updatable = false, columnDefinition = "TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP")
+    private OffsetDateTime dataCadastro;
+
+    @OneToOne(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)
+    private PerfilVoluntarioEntity perfilVoluntario;
+
+    @ManyToMany(cascade = {
+            CascadeType.PERSIST,
+            CascadeType.MERGE
+    })
+    @JoinTable(
+        name = "tb_voluntario_habilidade",
+        joinColumns = @JoinColumn(name = "id_usuario"),
+        inverseJoinColumns = @JoinColumn(name = "id_habilidade")
+    )
+    private Set<HabilidadesEntity> habilidades = new HashSet<>();
+
+    @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private Set<InscricaoEntity> inscricao = new HashSet<>();
+}
