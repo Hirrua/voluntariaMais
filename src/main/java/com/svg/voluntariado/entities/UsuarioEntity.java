@@ -51,10 +51,6 @@ public class UsuarioEntity {
     })
     private EnderecoEntity endereco;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "tipo_usuario_enum", nullable = false)
-    private TipoUsuarioEnum tipoUsuarioEnum;
-
     private boolean ativo = true;
 
     @CreationTimestamp
