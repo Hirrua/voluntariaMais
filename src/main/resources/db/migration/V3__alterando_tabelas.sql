@@ -1,0 +1,3 @@
+ALTER TABLE tb_ong ALTER COLUMN cnpj SET NOT NULL;
+
+ALTER TABLE tb_ong ALTER COLUMN email_contato_ong SET NOT NULL;
