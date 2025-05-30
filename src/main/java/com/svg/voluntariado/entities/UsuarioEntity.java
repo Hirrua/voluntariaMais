@@ -1,5 +1,6 @@
 package com.svg.voluntariado.entities;
 
+import com.svg.voluntariado.dto.LoginRequest;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import lombok.*;
@@ -7,6 +8,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.OffsetDateTime;
 import java.util.Collection;
@@ -83,11 +85,24 @@ public class UsuarioEntity implements UserDetails {
             CascadeType.MERGE
     })
     @JoinTable(
-            name = "tb_usuarios_roles",
+            name = "tb_usuario_roles",
             joinColumns = @JoinColumn(name = "id_usuario"),
-            inverseJoinColumns = @JoinColumn(name = "id_role")
+            inverseJoinColumns = @JoinColumn(
+                    name = "id_role",
+                    referencedColumnName = "id"
+            )
     )
     private Set<RoleEntity> roles = new HashSet<>();
+
+    public UsuarioEntity(String nome, String sobrenome, String email, String senha, String cpf, EnderecoEntity endereco, OffsetDateTime dataCadastro) {
+        this.nome = nome;
+        this.sobrenome = sobrenome;
+        this.email = email;
+        this.senha = senha;
+        this.cpf = cpf;
+        this.endereco = endereco;
+        this.dataCadastro = dataCadastro;
+    }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

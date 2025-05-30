@@ -1,0 +1,12 @@
+ALTER TABLE tb_usuarios
+ALTER COLUMN id_usuario TYPE BIGINT;
+
+ALTER TABLE tb_roles
+ALTER COLUMN id TYPE BIGINT;
+
+ ALTER TABLE tb_usuario_roles DROP CONSTRAINT IF EXISTS id_usuario;
+ ALTER TABLE tb_usuario_roles DROP CONSTRAINT IF EXISTS id_role;
+
+ALTER TABLE tb_usuario_roles
+    ALTER COLUMN id_usuario TYPE BIGINT,
+    ALTER COLUMN id_role TYPE BIGINT;

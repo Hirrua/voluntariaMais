@@ -1,8 +1,7 @@
 package com.svg.voluntariado.enums;
 
-@Deprecated
 public enum TipoUsuarioEnum {
-    VOLUNTARIO,
-    ADMIN_ONG,
-    ADMIN_PLATAFORMA
+    ROLE_VOLUNTARIO,
+    ROLE_ADMIN_ONG,
+    ROLE_ADMIN_PLATAFORMA
 }
