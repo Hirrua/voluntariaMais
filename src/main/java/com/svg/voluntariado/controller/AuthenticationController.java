@@ -1,10 +1,10 @@
 package com.svg.voluntariado.controller;
 
-import com.svg.voluntariado.dto.LoginRequest;
-import com.svg.voluntariado.dto.LoginResponse;
-import com.svg.voluntariado.dto.UserRegisterRequest;
-import com.svg.voluntariado.entities.RoleEntity;
-import com.svg.voluntariado.entities.UsuarioEntity;
+import com.svg.voluntariado.domain.dto.LoginRequest;
+import com.svg.voluntariado.domain.dto.LoginResponse;
+import com.svg.voluntariado.domain.dto.UserRegisterRequest;
+import com.svg.voluntariado.domain.entities.RoleEntity;
+import com.svg.voluntariado.domain.entities.UsuarioEntity;
 import com.svg.voluntariado.repositories.RoleRepository;
 import com.svg.voluntariado.repositories.UsuarioRepository;
 import com.svg.voluntariado.services.TokenService;

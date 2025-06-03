@@ -1,6 +1,5 @@
-package com.svg.voluntariado.entities;
+package com.svg.voluntariado.domain.entities;
 
-import com.svg.voluntariado.dto.LoginRequest;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import lombok.*;
@@ -8,7 +7,6 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.OffsetDateTime;
 import java.util.Collection;
