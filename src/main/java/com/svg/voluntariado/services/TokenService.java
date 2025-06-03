@@ -1,7 +1,7 @@
 package com.svg.voluntariado.services;
 
-import com.svg.voluntariado.entities.RoleEntity;
-import com.svg.voluntariado.entities.UsuarioEntity;
+import com.svg.voluntariado.domain.entities.RoleEntity;
+import com.svg.voluntariado.domain.entities.UsuarioEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.jwt.JwtEncoder;

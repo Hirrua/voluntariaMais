@@ -1,6 +1,6 @@
-package com.svg.voluntariado.entities;
+package com.svg.voluntariado.domain.entities;
 
-import com.svg.voluntariado.enums.StatusInscricaoEnum;
+import com.svg.voluntariado.domain.enums.StatusInscricaoEnum;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;

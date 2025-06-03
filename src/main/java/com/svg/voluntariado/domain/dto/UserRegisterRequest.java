@@ -1,6 +1,6 @@
-package com.svg.voluntariado.dto;
+package com.svg.voluntariado.domain.dto;
 
-import com.svg.voluntariado.entities.EnderecoEntity;
+import com.svg.voluntariado.domain.entities.EnderecoEntity;
 
 public record UserRegisterRequest(
         String nome,

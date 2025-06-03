@@ -1,4 +1,4 @@
-package com.svg.voluntariado.enums;
+package com.svg.voluntariado.domain.enums;
 
 public enum StatusInscricaoEnum {
     PENDENTE,

@@ -1,6 +1,6 @@
 package com.svg.voluntariado.repositories;
 
-import com.svg.voluntariado.entities.UsuarioEntity;
+import com.svg.voluntariado.domain.entities.UsuarioEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

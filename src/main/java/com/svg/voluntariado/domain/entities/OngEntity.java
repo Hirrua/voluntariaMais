@@ -1,6 +1,6 @@
-package com.svg.voluntariado.entities;
+package com.svg.voluntariado.domain.entities;
 
-import com.svg.voluntariado.enums.StatusAprovacaoOngEnum;
+import com.svg.voluntariado.domain.enums.StatusAprovacaoOngEnum;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import lombok.*;

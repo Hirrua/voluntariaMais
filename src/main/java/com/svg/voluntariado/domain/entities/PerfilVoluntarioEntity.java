@@ -1,4 +1,4 @@
-package com.svg.voluntariado.entities;
+package com.svg.voluntariado.domain.entities;
 
 import jakarta.persistence.*;
 import lombok.*;
