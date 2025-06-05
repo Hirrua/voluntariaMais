@@ -42,7 +42,7 @@ public class AuthenticationController {
         System.out.println(loginRequest);
         var user = usuarioRepository.findByEmail(loginRequest.email());
 
-        if (user.isEmpty() || isLoginCorrect(loginRequest.senha(), user.get().getPassword(), bCryptPasswordEncoder)) {
+        if (user.isEmpty() || !isLoginCorrect(loginRequest.senha(), user.get().getPassword(), bCryptPasswordEncoder)) {
             throw new BadCredentialsException("Credenciais incorretas.");
         }
 
