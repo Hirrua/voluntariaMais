@@ -61,7 +61,7 @@ public class UsuarioEntity implements UserDetails {
     @Column(name = "data_cadastro", nullable = false, updatable = false, columnDefinition = "TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP")
     private OffsetDateTime dataCadastro;
 
-    @OneToOne(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToOne(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private PerfilVoluntarioEntity perfilVoluntario;
 
     @ManyToMany(cascade = {
