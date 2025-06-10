@@ -2,6 +2,7 @@ package com.svg.voluntariado.controller;
 
 import com.svg.voluntariado.domain.dto.CreateProfileRequest;
 import com.svg.voluntariado.domain.dto.InfoPerfilResponse;
+import com.svg.voluntariado.domain.dto.UpdateInfoProfileRequest;
 import com.svg.voluntariado.services.PerfilVoluntarioService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,5 +32,17 @@ public class PerfilVoluntarioController {
     public ResponseEntity<InfoPerfilResponse> getInfoProfile(@PathVariable(value = "id") Long id) {
         var infos = perfilVoluntarioService.read(id);
         return ResponseEntity.ok().body(infos);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateInfoProfile(@PathVariable(value = "id") Long id, @RequestBody @Valid UpdateInfoProfileRequest updateInfo) {
+        var infos = perfilVoluntarioService.update(id, updateInfo);
+        return ResponseEntity.ok().body(infos);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteProfile(@PathVariable(value = "id") Long id) {
+        perfilVoluntarioService.delete(id);
+        return ResponseEntity.ok().build();
     }
 }
