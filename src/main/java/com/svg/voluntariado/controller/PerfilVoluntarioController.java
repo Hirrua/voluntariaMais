@@ -7,6 +7,9 @@ import com.svg.voluntariado.services.PerfilVoluntarioService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
@@ -35,12 +38,14 @@ public class PerfilVoluntarioController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("T(java.lang.Long).parseLong(principal.subject) == #id")
     public ResponseEntity<?> updateInfoProfile(@PathVariable(value = "id") Long id, @RequestBody @Valid UpdateInfoProfileRequest updateInfo) {
         var infos = perfilVoluntarioService.update(id, updateInfo);
         return ResponseEntity.ok().body(infos);
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("T(java.lang.Long).parseLong(principal.subject) == #id or hasRole('ADMIN_PLATAFORMA')")
     public ResponseEntity<?> deleteProfile(@PathVariable(value = "id") Long id) {
         perfilVoluntarioService.delete(id);
         return ResponseEntity.ok().build();
