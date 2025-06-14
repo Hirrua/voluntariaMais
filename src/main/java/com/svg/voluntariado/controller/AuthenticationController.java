@@ -7,6 +7,7 @@ import com.svg.voluntariado.domain.entities.RoleEntity;
 import com.svg.voluntariado.domain.entities.UsuarioEntity;
 import com.svg.voluntariado.repositories.RoleRepository;
 import com.svg.voluntariado.repositories.UsuarioRepository;
+import com.svg.voluntariado.services.AuthenticationService;
 import com.svg.voluntariado.services.TokenService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,64 +25,22 @@ import java.time.OffsetDateTime;
 @RequestMapping("/api/auth")
 public class AuthenticationController {
 
-    private final UsuarioRepository usuarioRepository;
-    private final TokenService tokenService;
-    private final RoleRepository roleRepository;
-
-    private final BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
+    private final AuthenticationService authenticationService;
 
     @Autowired
-    public AuthenticationController(UsuarioRepository usuarioRepository, TokenService tokenService, RoleRepository roleRepository) {
-        this.usuarioRepository = usuarioRepository;
-        this.tokenService = tokenService;
-        this.roleRepository = roleRepository;
+    public AuthenticationController(AuthenticationService authenticationService) {
+        this.authenticationService = authenticationService;
     }
 
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@RequestBody @Valid LoginRequest loginRequest) {
-        System.out.println(loginRequest);
-        var user = usuarioRepository.findByEmail(loginRequest.email());
-
-        if (user.isEmpty() || !isLoginCorrect(loginRequest.senha(), user.get().getPassword(), bCryptPasswordEncoder)) {
-            throw new BadCredentialsException("Credenciais incorretas.");
-        }
-
-        var userToken = tokenService.generateToken(user.get());
-
-        return ResponseEntity.ok().body(new LoginResponse(userToken, TokenService.EXPIRY));
+        var response = authenticationService.login(loginRequest);
+        return ResponseEntity.ok().body(response);
     }
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody @Valid UserRegisterRequest registerRequest) {
-        if (usuarioRepository.findByEmail(registerRequest.email()).isPresent()) {
-            return ResponseEntity.badRequest().body("Erro: Email já está em uso!");
-        }
-
-        if (usuarioRepository.findByCpf(registerRequest.cpf()).isPresent()) {
-            return ResponseEntity.badRequest().body("Erro: CPF já está cadastrado!");
-        }
-
-        RoleEntity defaultRole = roleRepository.findByNome("ROLE_VOLUNTARIO");
-
-        var senhaHash = bCryptPasswordEncoder.encode(registerRequest.senha());
-
-        UsuarioEntity novoUsuario = new UsuarioEntity(
-                registerRequest.nome(),
-                registerRequest.sobrenome(),
-                registerRequest.email(),
-                senhaHash,
-                registerRequest.cpf(),
-                registerRequest.endereco(),
-                OffsetDateTime.now()
-        );
-
-        novoUsuario.getRoles().add(defaultRole);
-
-        usuarioRepository.save(novoUsuario);
+        authenticationService.register(registerRequest);
         return ResponseEntity.ok().build();
-    }
-
-    private boolean isLoginCorrect(String senha, String senhaHash, BCryptPasswordEncoder passwordEncoder) {
-        return passwordEncoder.matches(senha, senhaHash);
     }
 }
