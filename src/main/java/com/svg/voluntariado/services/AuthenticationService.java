@@ -5,6 +5,7 @@ import com.svg.voluntariado.domain.dto.LoginResponse;
 import com.svg.voluntariado.domain.dto.UserRegisterRequest;
 import com.svg.voluntariado.domain.entities.RoleEntity;
 import com.svg.voluntariado.domain.entities.UsuarioEntity;
+import com.svg.voluntariado.domain.mapper.UserMapper;
 import com.svg.voluntariado.repositories.RoleRepository;
 import com.svg.voluntariado.repositories.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,14 +21,16 @@ public class AuthenticationService {
     private final UsuarioRepository usuarioRepository;
     private final TokenService tokenService;
     private final RoleRepository roleRepository;
+    private final UserMapper userMapper;
 
     private final BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
 
     @Autowired
-    public AuthenticationService(UsuarioRepository usuarioRepository, TokenService tokenService, RoleRepository roleRepository) {
+    public AuthenticationService(UsuarioRepository usuarioRepository, TokenService tokenService, RoleRepository roleRepository, UserMapper userMapper) {
         this.usuarioRepository = usuarioRepository;
         this.tokenService = tokenService;
         this.roleRepository = roleRepository;
+        this.userMapper = userMapper;
     }
 
     public LoginResponse login(LoginRequest loginRequest) {
@@ -45,19 +48,10 @@ public class AuthenticationService {
         RoleEntity defaultRole = roleRepository.findByNome("ROLE_VOLUNTARIO");
         var senhaHash = bCryptPasswordEncoder.encode(registerRequest.senha());
 
-        UsuarioEntity novoUsuario = new UsuarioEntity(
-                registerRequest.nome(),
-                registerRequest.sobrenome(),
-                registerRequest.email(),
-                senhaHash,
-                registerRequest.cpf(),
-                registerRequest.endereco(),
-                OffsetDateTime.now()
-        );
-
-        novoUsuario.getRoles().add(defaultRole);
-
-        usuarioRepository.save(novoUsuario);
+        var newUser = userMapper.toUsuarioEntity(registerRequest);
+        newUser.setSenha(senhaHash);
+        newUser.getRoles().add(defaultRole);
+        usuarioRepository.save(newUser);
     }
 
     private boolean isLoginCorrect(String senha, String senhaHash, BCryptPasswordEncoder passwordEncoder) {
