@@ -12,11 +12,13 @@ import org.mapstruct.MappingTarget;
 public interface ProfileMapper {
 
     @Mapping(target = "id", ignore = true)
+    @Mapping(target = "usuario", ignore = true)
     PerfilVoluntarioEntity toPerfilVoluntarioEntity(CreateProfileRequest createProfileRequest);
 
     InfoPerfilResponse toInfoPerfilResponse(PerfilVoluntarioEntity perfil);
 
     @Mapping(target = "id", ignore = true)
+    @Mapping(target = "usuario", ignore = true)
     PerfilVoluntarioEntity toPerfilVoluntarioEntity(UpdateInfoProfileRequest update, @MappingTarget PerfilVoluntarioEntity perfil);
 
 
