@@ -64,6 +64,10 @@ public class OngEntity {
     @Column(name = "status_aprovacao")
     private StatusAprovacaoOngEnum status = StatusAprovacaoOngEnum.PENDENTE;
 
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_usuario_responsavel", nullable = false, unique = true)
+    private UsuarioEntity usuarioResponsavel;
+
     @CreationTimestamp
     @Column(name = "data_criacao_registro", nullable = false, updatable = false, columnDefinition = "TIMESTAMP WITH TIME ZONE")
     private OffsetDateTime dataCriacaoRegistro;

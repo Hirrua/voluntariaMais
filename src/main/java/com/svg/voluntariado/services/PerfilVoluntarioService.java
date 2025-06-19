@@ -5,6 +5,7 @@ import com.svg.voluntariado.domain.dto.InfoPerfilResponse;
 import com.svg.voluntariado.domain.dto.UpdateInfoProfileRequest;
 import com.svg.voluntariado.domain.entities.PerfilVoluntarioEntity;
 import com.svg.voluntariado.domain.entities.UsuarioEntity;
+import com.svg.voluntariado.domain.mapper.ProfileMapper;
 import com.svg.voluntariado.repositories.PerfilVoluntarioRepository;
 import com.svg.voluntariado.repositories.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,11 +19,13 @@ public class PerfilVoluntarioService {
 
     private final UsuarioRepository usuarioRepository;
     private final PerfilVoluntarioRepository perfilVoluntarioRepository;
+    private final ProfileMapper profileMapper;
 
     @Autowired
-    public PerfilVoluntarioService(PerfilVoluntarioRepository perfilVoluntarioRepository, UsuarioRepository usuarioRepository) {
+    public PerfilVoluntarioService(PerfilVoluntarioRepository perfilVoluntarioRepository, UsuarioRepository usuarioRepository, ProfileMapper profileMapper) {
         this.usuarioRepository = usuarioRepository;
         this.perfilVoluntarioRepository = perfilVoluntarioRepository;
+        this.profileMapper = profileMapper;
     }
 
     @Transactional
@@ -36,12 +39,7 @@ public class PerfilVoluntarioService {
             throw new IllegalStateException("Este usuário já possui um perfil de voluntário.");
         }
 
-        var novoPerfil = new PerfilVoluntarioEntity(
-                createProfileRequest.bio(),
-                createProfileRequest.disponibilidade(),
-                createProfileRequest.dataNascimento(),
-                createProfileRequest.telefoneContato()
-        );
+        var novoPerfil = profileMapper.toPerfilVoluntarioEntity(createProfileRequest);
         novoPerfil.setUsuario(usuario);
 
         usuario.setPerfilVoluntario(novoPerfil);
@@ -57,13 +55,8 @@ public class PerfilVoluntarioService {
                 .orElseThrow(() -> new NoSuchElementException("Perfil não encontrado.")
         );
 
-        return new InfoPerfilResponse(
-                perfil.getId(),
-                perfil.getBio(),
-                perfil.getDisponibilidade(),
-                perfil.getDataNascimento(),
-                perfil.getTelefoneContato()
-        );
+
+        return profileMapper.toInfoPerfilResponse(perfil);
     }
 
     @Transactional
@@ -73,13 +66,8 @@ public class PerfilVoluntarioService {
                 .orElseThrow(() -> new NoSuchElementException("Perfil não encontrado.")
         );
 
-        return new  InfoPerfilResponse(
-                id,
-                updateInfo.bio(),
-                updateInfo.disponibilidade(),
-                updateInfo.dataNascimento(),
-                updateInfo.telefoneContato()
-        );
+        var infosMap = profileMapper.toPerfilVoluntarioEntity(updateInfo, perfil);
+        return profileMapper.toInfoPerfilResponse(infosMap);
     }
 
     @Transactional
