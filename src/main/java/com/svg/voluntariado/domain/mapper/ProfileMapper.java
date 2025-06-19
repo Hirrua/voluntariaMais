@@ -7,8 +7,9 @@ import com.svg.voluntariado.domain.entities.PerfilVoluntarioEntity;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
+import org.mapstruct.ReportingPolicy;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.ERROR)
 public interface ProfileMapper {
 
     @Mapping(target = "id", ignore = true)
@@ -20,6 +21,5 @@ public interface ProfileMapper {
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "usuario", ignore = true)
     PerfilVoluntarioEntity toPerfilVoluntarioEntity(UpdateInfoProfileRequest update, @MappingTarget PerfilVoluntarioEntity perfil);
-
 
 }
