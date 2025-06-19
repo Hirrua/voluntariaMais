@@ -9,7 +9,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
@@ -37,9 +39,10 @@ public class PerfilVoluntarioController {
         return ResponseEntity.ok().body(infos);
     }
 
-    @PutMapping("/{id}")
-    @PreAuthorize("T(java.lang.Long).parseLong(principal.subject) == #id")
-    public ResponseEntity<?> updateInfoProfile(@PathVariable(value = "id") Long id, @RequestBody @Valid UpdateInfoProfileRequest updateInfo) {
+    @PutMapping("/me")
+    @PreAuthorize("hasRole('VOLUNTARIO')")
+    public ResponseEntity<?> updateInfoProfile(@RequestBody @Valid UpdateInfoProfileRequest updateInfo, @AuthenticationPrincipal Jwt principal) {
+        Long id = Long.parseLong(principal.getSubject());
         var infos = perfilVoluntarioService.update(id, updateInfo);
         return ResponseEntity.ok().body(infos);
     }
