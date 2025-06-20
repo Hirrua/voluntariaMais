@@ -45,7 +45,7 @@ public class OngService {
         return newOng.getId();
     }
 
-    public InfoOngResponse read(Long id) {
+    public InfoOngResponse get(Long id) {
         var ong = ongRepository.findById(id)
                 .orElseThrow(OngNotFoundException::new);
 

@@ -33,7 +33,7 @@ public class OngController {
 
     @GetMapping("/info/{id}")
     public ResponseEntity<?> getInfoOng(@PathVariable(value = "id") Long id) {
-        var ongInfos = ongService.read(id);
+        var ongInfos = ongService.get(id);
         return ResponseEntity.ok().body(ongInfos);
     }
 

@@ -33,7 +33,7 @@ public class PerfilVoluntarioController {
 
     @GetMapping("/{id}")
     public ResponseEntity<InfoPerfilResponse> getInfoProfile(@PathVariable(value = "id") Long id) {
-        var infos = perfilVoluntarioService.read(id);
+        var infos = perfilVoluntarioService.get(id);
         return ResponseEntity.ok().body(infos);
     }
 
