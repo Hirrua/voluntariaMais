@@ -38,7 +38,6 @@ public class OngController {
     }
 
     @GetMapping("/info")
-    // TODO criar paginação
     public ResponseEntity<?> findAllOng(@RequestParam int page, @RequestParam int itens) {
         List<ListOngResponse> ongResponseList = ongService.findAllOng(page, itens);
         return ResponseEntity.ok().body(ongResponseList);
