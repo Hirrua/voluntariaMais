@@ -1,6 +1,7 @@
 package com.svg.voluntariado.controller;
 
 import com.svg.voluntariado.domain.dto.projeto.CreateProjetoRequest;
+import com.svg.voluntariado.domain.dto.projeto.UpdateProjetoRequest;
 import com.svg.voluntariado.services.ProjetoService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -32,6 +33,16 @@ public class ProjetoController {
     public ResponseEntity<?> getAllProjects(@RequestParam int page, @RequestParam int itens) {
         var projetos = projetoService.getAll(page, itens);
         return ResponseEntity.ok().body(projetos);
+    }
+
+    @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN_ONG')")
+    public ResponseEntity<?> updateProject(@PathVariable(value = "id") Long idProjeto,
+                                           @AuthenticationPrincipal Jwt principal,
+                                           @RequestBody UpdateProjetoRequest updateProjetoRequest) {
+        Long idAdmin = Long.parseLong(principal.getSubject());
+        var update = projetoService.update(idProjeto, idAdmin, updateProjetoRequest);
+        return ResponseEntity.ok().body(update);
     }
 
     @DeleteMapping("/{id}")

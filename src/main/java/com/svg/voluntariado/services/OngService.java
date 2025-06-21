@@ -52,6 +52,8 @@ public class OngService {
         return ongMapper.toInfoOngResponse(ong);
     }
 
+    // TODO método para buscar ong e os projetos vinculados a ela
+
     public List<ListOngResponse> findAllOng(int page, int itens) {
         Page<OngEntity> ongEntities = ongRepository.findAll(PageRequest.of(page, itens));
         if (ongEntities.isEmpty()) {
