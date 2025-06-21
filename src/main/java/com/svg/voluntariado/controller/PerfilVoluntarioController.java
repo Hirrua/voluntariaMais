@@ -8,9 +8,7 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
@@ -35,7 +33,7 @@ public class PerfilVoluntarioController {
 
     @GetMapping("/{id}")
     public ResponseEntity<InfoPerfilResponse> getInfoProfile(@PathVariable(value = "id") Long id) {
-        var infos = perfilVoluntarioService.read(id);
+        var infos = perfilVoluntarioService.get(id);
         return ResponseEntity.ok().body(infos);
     }
 

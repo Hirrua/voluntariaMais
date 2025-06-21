@@ -3,7 +3,6 @@ package com.svg.voluntariado.services;
 import com.svg.voluntariado.domain.dto.CreateProfileRequest;
 import com.svg.voluntariado.domain.dto.InfoPerfilResponse;
 import com.svg.voluntariado.domain.dto.UpdateInfoProfileRequest;
-import com.svg.voluntariado.domain.entities.PerfilVoluntarioEntity;
 import com.svg.voluntariado.domain.entities.UsuarioEntity;
 import com.svg.voluntariado.domain.mapper.ProfileMapper;
 import com.svg.voluntariado.repositories.PerfilVoluntarioRepository;
@@ -49,7 +48,7 @@ public class PerfilVoluntarioService {
     }
 
     @Transactional(readOnly = true)
-    public InfoPerfilResponse read(Long id) {
+    public InfoPerfilResponse get(Long id) {
 
         var perfil = perfilVoluntarioRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Perfil não encontrado.")
