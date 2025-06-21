@@ -7,6 +7,7 @@ import com.svg.voluntariado.domain.dto.ong.UpdateInfoOngRequest;
 import com.svg.voluntariado.domain.entities.OngEntity;
 import com.svg.voluntariado.domain.entities.UsuarioEntity;
 import com.svg.voluntariado.domain.mapper.OngMapper;
+import com.svg.voluntariado.exceptions.OngNotFoundException;
 import com.svg.voluntariado.repositories.OngRepository;
 import com.svg.voluntariado.repositories.UsuarioRepository;
 import org.springframework.data.domain.Page;
@@ -44,26 +45,26 @@ public class OngService {
         return newOng.getId();
     }
 
-    public InfoOngResponse read(Long id) {
+    public InfoOngResponse get(Long id) {
         var ong = ongRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("Ong não encontrada")
-        );
+                .orElseThrow(OngNotFoundException::new);
 
         return ongMapper.toInfoOngResponse(ong);
     }
 
+    // TODO método para buscar ong e os projetos vinculados a ela
+
     public List<ListOngResponse> findAllOng(int page, int itens) {
         Page<OngEntity> ongEntities = ongRepository.findAll(PageRequest.of(page, itens));
         if (ongEntities.isEmpty()) {
-            throw new NoSuchElementException("Nenhuma ong foi criada até o momento");
+            throw new OngNotFoundException("Nenhuma ong foi criada até o momento");
         }
         return ongMapper.toListOngResponse(ongEntities);
     }
 
     public InfoOngResponse update(Long idOng, Long idAdmin, UpdateInfoOngRequest updateInfoOngRequest) {
         var ong = ongRepository.findById(idOng)
-                .orElseThrow(() -> new NoSuchElementException("Ong não encontrada")
-        );
+                .orElseThrow(OngNotFoundException::new);
 
         if (!ong.getUsuarioResponsavel().getId().equals(idAdmin)) {
             throw new BadCredentialsException("Somente o admin da ong pode realizar alterações");
@@ -75,8 +76,7 @@ public class OngService {
 
     public void delete(Long idOng, Long idAdmin) {
         var ong = ongRepository.findById(idOng)
-                .orElseThrow(() -> new NoSuchElementException("Ong não encontrada")
-                );
+                .orElseThrow(OngNotFoundException::new);
 
         if (!ong.getUsuarioResponsavel().getId().equals(idAdmin)) {
             throw new BadCredentialsException("Somente o admin da ong pode realizar alterações");
