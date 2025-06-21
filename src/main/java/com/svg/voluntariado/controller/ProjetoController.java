@@ -33,4 +33,12 @@ public class ProjetoController {
         var projetos = projetoService.getAll(page, itens);
         return ResponseEntity.ok().body(projetos);
     }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN_ONG') or hasRole('ADMIN_PLATAFORMA')")
+    public ResponseEntity<?> deleteProject(@PathVariable(value = "id") Long idProjeto, @AuthenticationPrincipal Jwt principal) {
+        Long idAdmin = Long.parseLong(principal.getSubject());
+        projetoService.delete(idProjeto, idAdmin, principal);
+        return ResponseEntity.ok().body("Projeto excluído com sucesso.");
+    }
 }

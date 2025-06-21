@@ -4,16 +4,16 @@ import com.svg.voluntariado.domain.dto.projeto.CreateProjetoRequest;
 import com.svg.voluntariado.domain.dto.projeto.SimpleInfoProjetoResponse;
 import com.svg.voluntariado.domain.mapper.ProjetoMapper;
 import com.svg.voluntariado.exceptions.OngNotFoundException;
+import com.svg.voluntariado.exceptions.ProjetoNotFoundException;
 import com.svg.voluntariado.repositories.OngRepository;
 import com.svg.voluntariado.repositories.ProjetoRepository;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.NoSuchElementException;
 
 @Service
 public class ProjetoService {
@@ -34,7 +34,7 @@ public class ProjetoService {
                 .orElseThrow(OngNotFoundException::new);
 
         if (!ong.getUsuarioResponsavel().getId().equals(idAdmin)) {
-            throw new BadCredentialsException("Apenas o admin da ong pode editar");
+            throw new AccessDeniedException("Apenas o admin da ong pode editar.");
         }
 
         var projeto = projetoMapper.toProjetoEntity(createProjetoRequest);
@@ -47,8 +47,25 @@ public class ProjetoService {
     public List<SimpleInfoProjetoResponse> getAll(int page, int itens) {
         var projetos = projetoRepository.findAll(PageRequest.of(page, itens));
         if (projetos.isEmpty()) {
-            throw new NoSuchElementException("Nenhum projeto foi criada até o momento");
+            throw new ProjetoNotFoundException("Nenhum projeto foi criada até o momento.");
         }
         return projetoMapper.toSimpleInfoProjetoResponse(projetos);
+    }
+
+    @Transactional
+    public void delete(Long idProjeto, Long idAdmin, Jwt principal) {
+        var projeto = projetoRepository.findById(idProjeto).orElseThrow(ProjetoNotFoundException::new);
+        boolean isAdminPlataforma = principal.getClaimAsStringList("roles").contains("ADMIN_PLATAFORMA");
+
+        if (!isAdminPlataforma) {
+            var ong = ongRepository.findById(projeto.getOng().getId())
+                    .orElseThrow(OngNotFoundException::new);
+
+            if (!ong.getUsuarioResponsavel().getId().equals(idAdmin)) {
+                throw new AccessDeniedException("Apenas o admin da ong pode excluir.");
+            }
+        }
+
+        projetoRepository.delete(projeto);
     }
 }
