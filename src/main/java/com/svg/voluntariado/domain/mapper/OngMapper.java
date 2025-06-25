@@ -1,9 +1,6 @@
 package com.svg.voluntariado.domain.mapper;
 
-import com.svg.voluntariado.domain.dto.ong.CreateOngRequest;
-import com.svg.voluntariado.domain.dto.ong.InfoOngResponse;
-import com.svg.voluntariado.domain.dto.ong.ListOngResponse;
-import com.svg.voluntariado.domain.dto.ong.UpdateInfoOngRequest;
+import com.svg.voluntariado.domain.dto.ong.*;
 import com.svg.voluntariado.domain.entities.OngEntity;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -39,4 +36,5 @@ public interface OngMapper {
     @Mapping(target = "usuarioResponsavel", ignore = true)
     OngEntity toOngEntity(UpdateInfoOngRequest updateInfoOngRequest, @MappingTarget OngEntity ongEntity);
 
+    OngContextoResponse toOngContextoResponse(OngEntity ong);
 }
