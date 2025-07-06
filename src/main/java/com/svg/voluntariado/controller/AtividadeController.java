@@ -1,8 +1,10 @@
 package com.svg.voluntariado.controller;
 
 import com.svg.voluntariado.domain.dto.atividade.CreateAtividadeRequest;
+import com.svg.voluntariado.domain.dto.atividade.UpdateAtividadeRequest;
 import com.svg.voluntariado.exceptions.AtividadeNotFoundException;
 import com.svg.voluntariado.services.AtividadeService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -44,5 +46,14 @@ public class AtividadeController {
         return ResponseEntity.ok().body(atividadeInfo);
     }
 
-
+    @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN_ONG')")
+    public ResponseEntity<?> updateActivity(@PathVariable(value = "id") Long id,
+                                            @AuthenticationPrincipal Jwt principal,
+                                            @RequestBody @Valid UpdateAtividadeRequest updateAtividadeRequest)
+            throws AtividadeNotFoundException, AccessDeniedException {
+        Long idAdmin = Long.parseLong(principal.getSubject());
+        var atividade = atividadeService.update(id, idAdmin, updateAtividadeRequest);
+        return ResponseEntity.ok().body(atividade);
+    }
 }

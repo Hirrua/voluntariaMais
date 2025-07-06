@@ -1,8 +1,6 @@
 package com.svg.voluntariado.services;
 
-import com.svg.voluntariado.domain.dto.atividade.CreateAtividadeRequest;
-import com.svg.voluntariado.domain.dto.atividade.InfoAtividadeResponse;
-import com.svg.voluntariado.domain.dto.atividade.SimpleInfoAtividadeResponse;
+import com.svg.voluntariado.domain.dto.atividade.*;
 import com.svg.voluntariado.domain.dto.ong.OngContextoResponse;
 import com.svg.voluntariado.domain.dto.projeto.ProjetoContextoResponse;
 import com.svg.voluntariado.domain.entities.AtividadeEntity;
@@ -21,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.nio.file.AccessDeniedException;
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -70,6 +69,23 @@ public class AtividadeService {
             throw new AtividadeNotFoundException("Nenhuma atividade foi criada.");
         }
         return atividadeMapper.toSimpleInfoAtividadeResponse(atividades);
+    }
+
+    @Transactional
+    public UpdateAtividadeResponse update(Long idAtividade, Long idAdmin, UpdateAtividadeRequest atividadeRequest)
+            throws AtividadeNotFoundException, AccessDeniedException {
+        var atividade = atividadeRepository.findById(idAtividade).orElseThrow(AtividadeNotFoundException::new);
+        var projeto = atividade.getProjeto();
+
+        var ong = projeto.getOng();
+        if (!ong.getUsuarioResponsavel().getId().equals(idAdmin)) {
+            throw new AccessDeniedException("Somente o admin da ong pode criar atividades.");
+        }
+
+        var updateEntity = atividadeMapper.toAtividadeEntity(atividadeRequest, atividade);
+        updateEntity.setUltimaAtualizacao(OffsetDateTime.now());
+        atividadeRepository.save(updateEntity);
+        return atividadeMapper.toUpdateAtividadeResponse(updateEntity);
     }
 
     @Transactional(readOnly = true)
