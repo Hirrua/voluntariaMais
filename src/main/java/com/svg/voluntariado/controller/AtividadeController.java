@@ -1,6 +1,7 @@
 package com.svg.voluntariado.controller;
 
 import com.svg.voluntariado.domain.dto.atividade.CreateAtividadeRequest;
+import com.svg.voluntariado.exceptions.AtividadeNotFoundException;
 import com.svg.voluntariado.services.AtividadeService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -29,10 +30,19 @@ public class AtividadeController {
         return ResponseEntity.created(URI.create("/api/atividades/" + atividadeId)).body("Atividade criada com sucesso.");
     }
 
+    @GetMapping("/infos")
+    @PreAuthorize("hasRole('VOLUNTARIO') or hasRole('ADMIN_ONG')")
+    public ResponseEntity<?> getActivities(@RequestParam int page, @RequestParam int itens) throws AtividadeNotFoundException {
+        var atividades = atividadeService.getAllActivities(page, itens);
+        return ResponseEntity.ok().body(atividades);
+    }
+
     @GetMapping("/info/{id}")
     @PreAuthorize("hasRole('VOLUNTARIO') or hasRole('ADMIN_ONG')")
     public ResponseEntity<?> getInfoActivity(@PathVariable(value = "id") Long id) {
         var atividadeInfo = atividadeService.get(id);
         return ResponseEntity.ok().body(atividadeInfo);
     }
+
+
 }
