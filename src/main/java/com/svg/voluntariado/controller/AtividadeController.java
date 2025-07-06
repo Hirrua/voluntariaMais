@@ -56,4 +56,13 @@ public class AtividadeController {
         var atividade = atividadeService.update(id, idAdmin, updateAtividadeRequest);
         return ResponseEntity.ok().body(atividade);
     }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN_ONG')")
+    public ResponseEntity<?> deleteActivity(@PathVariable(value = "id") Long id, @AuthenticationPrincipal Jwt principal)
+            throws AtividadeNotFoundException, AccessDeniedException {
+        Long idAdmin = Long.parseLong(principal.getSubject());
+        atividadeService.delete(id, idAdmin);
+        return ResponseEntity.ok().body("Atividade foi deletada com sucesso");
+    }
 }

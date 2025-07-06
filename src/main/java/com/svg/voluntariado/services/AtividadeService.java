@@ -79,13 +79,26 @@ public class AtividadeService {
 
         var ong = projeto.getOng();
         if (!ong.getUsuarioResponsavel().getId().equals(idAdmin)) {
-            throw new AccessDeniedException("Somente o admin da ong pode criar atividades.");
+            throw new AccessDeniedException("Somente o admin da ong pode editar atividades.");
         }
 
         var updateEntity = atividadeMapper.toAtividadeEntity(atividadeRequest, atividade);
         updateEntity.setUltimaAtualizacao(OffsetDateTime.now());
         atividadeRepository.save(updateEntity);
         return atividadeMapper.toUpdateAtividadeResponse(updateEntity);
+    }
+
+    @Transactional
+    public void delete(Long idAtividade, Long idAdmin) throws AtividadeNotFoundException, AccessDeniedException {
+        var atividade = atividadeRepository.findById(idAtividade).orElseThrow(AtividadeNotFoundException::new);
+        var projeto = atividade.getProjeto();
+
+        var ong = projeto.getOng();
+        if (!ong.getUsuarioResponsavel().getId().equals(idAdmin)) {
+            throw new AccessDeniedException("Somente o admin da ong pode deletar atividades.");
+        }
+
+        atividadeRepository.delete(atividade);
     }
 
     @Transactional(readOnly = true)
