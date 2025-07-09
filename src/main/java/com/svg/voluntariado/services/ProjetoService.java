@@ -70,6 +70,7 @@ public class ProjetoService {
 
         var projetoMap = projetoMapper.toProjetoEntity(updateProjetoRequest, projeto);
         projetoMap.setDataAtualizacao(OffsetDateTime.now());
+        projetoRepository.save(projetoMap);
         return projetoMapper.toUpdateProjetoResponse(projetoMap);
     }
 

@@ -1,9 +1,6 @@
 package com.svg.voluntariado.domain.mapper;
 
-import com.svg.voluntariado.domain.dto.projeto.CreateProjetoRequest;
-import com.svg.voluntariado.domain.dto.projeto.SimpleInfoProjetoResponse;
-import com.svg.voluntariado.domain.dto.projeto.UpdateProjetoRequest;
-import com.svg.voluntariado.domain.dto.projeto.UpdateProjetoResponse;
+import com.svg.voluntariado.domain.dto.projeto.*;
 import com.svg.voluntariado.domain.entities.ProjetoEntity;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -36,4 +33,6 @@ public interface ProjetoMapper {
     ProjetoEntity toProjetoEntity(UpdateProjetoRequest updateProjetoRequest, @MappingTarget ProjetoEntity projeto);
 
     UpdateProjetoResponse toUpdateProjetoResponse(ProjetoEntity entity);
+
+    ProjetoContextoResponse toProjetoContextoResponse(ProjetoEntity entity);
 }
