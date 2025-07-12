@@ -2,7 +2,7 @@ package com.svg.voluntariado.controller;
 
 import com.svg.voluntariado.domain.dto.atividade.CreateAtividadeRequest;
 import com.svg.voluntariado.domain.dto.atividade.UpdateAtividadeRequest;
-import com.svg.voluntariado.exceptions.AtividadeNotFoundException;
+import com.svg.voluntariado.exceptions.ActivityNotFoundException;
 import com.svg.voluntariado.services.AtividadeService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -34,14 +34,14 @@ public class AtividadeController {
 
     @GetMapping("/infos")
     @PreAuthorize("hasRole('VOLUNTARIO') or hasRole('ADMIN_ONG')")
-    public ResponseEntity<?> getActivities(@RequestParam int page, @RequestParam int itens) throws AtividadeNotFoundException {
+    public ResponseEntity<?> getActivities(@RequestParam int page, @RequestParam int itens) throws ActivityNotFoundException {
         var atividades = atividadeService.getAllActivities(page, itens);
         return ResponseEntity.ok().body(atividades);
     }
 
     @GetMapping("/info/{id}")
     @PreAuthorize("hasRole('VOLUNTARIO') or hasRole('ADMIN_ONG')")
-    public ResponseEntity<?> getInfoActivity(@PathVariable(value = "id") Long id) {
+    public ResponseEntity<?> getInfoActivity(@PathVariable(value = "id") Long id) throws ActivityNotFoundException {
         var atividadeInfo = atividadeService.get(id);
         return ResponseEntity.ok().body(atividadeInfo);
     }
@@ -51,7 +51,7 @@ public class AtividadeController {
     public ResponseEntity<?> updateActivity(@PathVariable(value = "id") Long id,
                                             @AuthenticationPrincipal Jwt principal,
                                             @RequestBody @Valid UpdateAtividadeRequest updateAtividadeRequest)
-            throws AtividadeNotFoundException, AccessDeniedException {
+            throws ActivityNotFoundException, AccessDeniedException {
         Long idAdmin = Long.parseLong(principal.getSubject());
         var atividade = atividadeService.update(id, idAdmin, updateAtividadeRequest);
         return ResponseEntity.ok().body(atividade);
@@ -60,7 +60,7 @@ public class AtividadeController {
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN_ONG')")
     public ResponseEntity<?> deleteActivity(@PathVariable(value = "id") Long id, @AuthenticationPrincipal Jwt principal)
-            throws AtividadeNotFoundException, AccessDeniedException {
+            throws ActivityNotFoundException, AccessDeniedException {
         Long idAdmin = Long.parseLong(principal.getSubject());
         atividadeService.delete(id, idAdmin);
         return ResponseEntity.ok().body("Atividade foi deletada com sucesso");
