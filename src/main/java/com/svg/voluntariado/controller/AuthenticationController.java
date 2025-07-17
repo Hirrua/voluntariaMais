@@ -2,7 +2,7 @@ package com.svg.voluntariado.controller;
 
 import com.svg.voluntariado.domain.dto.LoginRequest;
 import com.svg.voluntariado.domain.dto.LoginResponse;
-import com.svg.voluntariado.domain.dto.UserRegisterRequest;
+import com.svg.voluntariado.domain.dto.user.UserRegisterRequest;
 import com.svg.voluntariado.services.AuthenticationService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;

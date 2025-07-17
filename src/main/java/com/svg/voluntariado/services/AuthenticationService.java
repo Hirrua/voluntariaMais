@@ -2,9 +2,9 @@ package com.svg.voluntariado.services;
 
 import com.svg.voluntariado.domain.dto.LoginRequest;
 import com.svg.voluntariado.domain.dto.LoginResponse;
-import com.svg.voluntariado.domain.dto.UserRegisterRequest;
+import com.svg.voluntariado.domain.dto.user.UserRegisterRequest;
 import com.svg.voluntariado.domain.entities.RoleEntity;
-import com.svg.voluntariado.domain.mapper.UserMapper;
+import com.svg.voluntariado.mapper.UserMapper;
 import com.svg.voluntariado.repositories.RoleRepository;
 import com.svg.voluntariado.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;

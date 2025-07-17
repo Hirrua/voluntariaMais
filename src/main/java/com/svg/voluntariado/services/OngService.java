@@ -6,7 +6,7 @@ import com.svg.voluntariado.domain.dto.ong.ListOngResponse;
 import com.svg.voluntariado.domain.dto.ong.UpdateInfoOngRequest;
 import com.svg.voluntariado.domain.entities.OngEntity;
 import com.svg.voluntariado.domain.entities.UsuarioEntity;
-import com.svg.voluntariado.domain.mapper.OngMapper;
+import com.svg.voluntariado.mapper.OngMapper;
 import com.svg.voluntariado.exceptions.OngNotFoundException;
 import com.svg.voluntariado.repositories.OngRepository;
 import com.svg.voluntariado.repositories.UserRepository;
@@ -33,12 +33,12 @@ public class OngService {
 
     @Transactional
     public Long create(CreateOngRequest createOngRequest) {
-        UsuarioEntity usuarioResponsavel = userRepository.findById(createOngRequest.idUsuarioResponsavel())
+        UsuarioEntity responsibleUser = userRepository.findById(createOngRequest.idUsuarioResponsavel())
                 .orElseThrow(() -> new RuntimeException("Usuário responsável não encontrado com ID: " + createOngRequest.idUsuarioResponsavel())
         );
 
         var ongEntity = ongMapper.toOngEntity(createOngRequest);
-        ongEntity.setUsuarioResponsavel(usuarioResponsavel);
+        ongEntity.setUsuarioResponsavel(responsibleUser);
         var newOng = ongRepository.save(ongEntity);
 
         return newOng.getId();

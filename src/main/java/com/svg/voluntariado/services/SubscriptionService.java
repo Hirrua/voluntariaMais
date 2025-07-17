@@ -1,32 +1,36 @@
 package com.svg.voluntariado.services;
 
-import com.svg.voluntariado.domain.dto.atividade.InfoActivitySubscription;
-import com.svg.voluntariado.domain.dto.inscricao.InscricaoResponse;
+import com.svg.voluntariado.domain.dto.inscricao.SubscriptionResponse;
 import com.svg.voluntariado.domain.dto.user.InfoUserSubscription;
 import com.svg.voluntariado.domain.entities.InscricaoEntity;
 import com.svg.voluntariado.exceptions.ActivityNotFoundException;
 import com.svg.voluntariado.exceptions.ProfileNotFoundException;
 import com.svg.voluntariado.exceptions.SubscriptionNotFoundException;
 import com.svg.voluntariado.exceptions.UserNotFoundException;
+import com.svg.voluntariado.projection.SubscriptionProjection;
 import com.svg.voluntariado.repositories.ActivityRepository;
 import com.svg.voluntariado.repositories.SubscriptionRepository;
 import com.svg.voluntariado.repositories.VolunteerProfileRepository;
 import com.svg.voluntariado.repositories.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
-public class InscricaoService {
+public class SubscriptionService {
 
     private final UserRepository userRepository;
     private final VolunteerProfileRepository volunteerProfileRepository;
     private final ActivityRepository activityRepository;
     private final SubscriptionRepository subscriptionRepository;
 
-    public InscricaoService(UserRepository userRepository,
-                            VolunteerProfileRepository volunteerProfileRepository,
-                            ActivityRepository activityRepository,
-                            SubscriptionRepository subscriptionRepository) {
+    @Autowired
+    public SubscriptionService(UserRepository userRepository,
+                               VolunteerProfileRepository volunteerProfileRepository,
+                               ActivityRepository activityRepository,
+                               SubscriptionRepository subscriptionRepository) {
         this.userRepository = userRepository;
         this.activityRepository = activityRepository;
         this.subscriptionRepository = subscriptionRepository;
@@ -55,21 +59,24 @@ public class InscricaoService {
     }
 
     @Transactional(readOnly = true)
-    public InscricaoResponse get(Long id) throws ActivityNotFoundException, UserNotFoundException, SubscriptionNotFoundException {
-        var subscription = subscriptionRepository.findById(id).orElseThrow(SubscriptionNotFoundException::new);
+    public List<SubscriptionResponse> getByActivity(Long idAtividade) throws UserNotFoundException, SubscriptionNotFoundException {
 
-        var user = userRepository.findById(subscription.getUsuario().getId()).orElseThrow(UserNotFoundException::new);
-        InfoUserSubscription infoUserSubscription = new InfoUserSubscription(user.getId(), user.getNome(), user.getEmail());
+        List<SubscriptionProjection> projections = subscriptionRepository.findSubscriptionFlatten(idAtividade);
+        if (projections.isEmpty()) {
+            throw new SubscriptionNotFoundException();
+        }
 
-        var activity = activityRepository.findById(subscription.getAtividade().getId()).orElseThrow(ActivityNotFoundException::new);
-        InfoActivitySubscription infoActivitySubscription = new InfoActivitySubscription(activity.getId(), activity.getNomeAtividade());
-
-        return new InscricaoResponse(
-                subscription.getId(),
-                subscription.getDataInscricao(),
-                subscription.getStatus(),
-                infoUserSubscription,
-                infoActivitySubscription
-        );
+        return projections.stream()
+                .map(p -> new SubscriptionResponse(
+                        p.getIdInscricao(),
+                        p.getDataInscricao(),
+                        p.getStatus(),
+                        new InfoUserSubscription(
+                                p.getUsuarioNome(),
+                                p.getUsuarioEmail()
+                        )
+                )
+        ).toList();
     }
+
 }

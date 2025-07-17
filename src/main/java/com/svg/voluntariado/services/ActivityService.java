@@ -4,9 +4,9 @@ import com.svg.voluntariado.domain.dto.atividade.*;
 import com.svg.voluntariado.domain.dto.ong.OngContextoResponse;
 import com.svg.voluntariado.domain.dto.projeto.ProjetoContextoResponse;
 import com.svg.voluntariado.domain.entities.AtividadeEntity;
-import com.svg.voluntariado.domain.mapper.AtividadeMapper;
-import com.svg.voluntariado.domain.mapper.OngMapper;
-import com.svg.voluntariado.domain.mapper.ProjetoMapper;
+import com.svg.voluntariado.mapper.ActivityMapper;
+import com.svg.voluntariado.mapper.OngMapper;
+import com.svg.voluntariado.mapper.ProjetoMapper;
 import com.svg.voluntariado.exceptions.ActivityNotFoundException;
 import com.svg.voluntariado.exceptions.OngNotFoundException;
 import com.svg.voluntariado.exceptions.ProjectNotFoundException;
@@ -22,21 +22,21 @@ import java.time.OffsetDateTime;
 import java.util.List;
 
 @Service
-public class AtividadeService {
+public class ActivityService {
 
     private final ActivityRepository activityRepository;
     private final ProjectRepository projectRepository;
-    private final AtividadeMapper atividadeMapper;
+    private final ActivityMapper activityMapper;
     private final OngRepository ongRepository;
     private final ProjetoMapper projetoMapper;
     private final OngMapper ongMapper;
 
-    public AtividadeService(ActivityRepository activityRepository, ProjectRepository projectRepository,
-                            AtividadeMapper atividadeMapper, OngRepository ongRepository,
-                            ProjetoMapper projetoMapper, OngMapper ongMapper) {
+    public ActivityService(ActivityRepository activityRepository, ProjectRepository projectRepository,
+                           ActivityMapper activityMapper, OngRepository ongRepository,
+                           ProjetoMapper projetoMapper, OngMapper ongMapper) {
         this.activityRepository = activityRepository;
         this.projectRepository = projectRepository;
-        this.atividadeMapper = atividadeMapper;
+        this.activityMapper = activityMapper;
         this.ongRepository = ongRepository;
         this.projetoMapper = projetoMapper;
         this.ongMapper = ongMapper;
@@ -44,22 +44,22 @@ public class AtividadeService {
 
     @Transactional
     public Long create(CreateAtividadeRequest createAtividadeRequest, Long idAdmin) throws AccessDeniedException {
-        var projeto = projectRepository.findById(createAtividadeRequest.idProjeto());
-        if (projeto.isEmpty()) {
+        var project = projectRepository.findById(createAtividadeRequest.idProjeto());
+        if (project.isEmpty()) {
             throw  new ProjectNotFoundException();
         }
 
-        var ong = ongRepository.findById(projeto.get().getOng().getId()).orElseThrow(OngNotFoundException::new);
+        var ong = ongRepository.findById(project.get().getOng().getId()).orElseThrow(OngNotFoundException::new);
         if (!ong.getUsuarioResponsavel().getId().equals(idAdmin)) {
             throw new AccessDeniedException("Somente o admin da ong pode criar atividades.");
         }
 
         // TODO validar as datas
 
-        var atividade = atividadeMapper.toAtividadeEntity(createAtividadeRequest);
-        atividade.setProjeto(projeto.get());
-        activityRepository.save(atividade);
-        return atividade.getId();
+        var activity = activityMapper.toAtividadeEntity(createAtividadeRequest);
+        activity.setProjeto(project.get());
+        activityRepository.save(activity);
+        return activity.getId();
     }
 
     @Transactional(readOnly = true)
@@ -68,49 +68,49 @@ public class AtividadeService {
         if (atividades.isEmpty()) {
             throw new ActivityNotFoundException("Nenhuma atividade foi criada.");
         }
-        return atividadeMapper.toSimpleInfoAtividadeResponse(atividades);
+        return activityMapper.toSimpleInfoAtividadeResponse(atividades);
     }
 
     @Transactional
     public UpdateAtividadeResponse update(Long idAtividade, Long idAdmin, UpdateAtividadeRequest atividadeRequest)
             throws ActivityNotFoundException, AccessDeniedException {
-        var atividade = activityRepository.findById(idAtividade).orElseThrow(ActivityNotFoundException::new);
-        var projeto = atividade.getProjeto();
+        var activity = activityRepository.findById(idAtividade).orElseThrow(ActivityNotFoundException::new);
+        var project = activity.getProjeto();
 
-        var ong = projeto.getOng();
+        var ong = project.getOng();
         if (!ong.getUsuarioResponsavel().getId().equals(idAdmin)) {
             throw new AccessDeniedException("Somente o admin da ong pode editar atividades.");
         }
 
-        var updateEntity = atividadeMapper.toAtividadeEntity(atividadeRequest, atividade);
+        var updateEntity = activityMapper.toAtividadeEntity(atividadeRequest, activity);
         updateEntity.setUltimaAtualizacao(OffsetDateTime.now());
         activityRepository.save(updateEntity);
-        return atividadeMapper.toUpdateAtividadeResponse(updateEntity);
+        return activityMapper.toUpdateAtividadeResponse(updateEntity);
     }
 
     @Transactional
     public void delete(Long idAtividade, Long idAdmin) throws ActivityNotFoundException, AccessDeniedException {
-        var atividade = activityRepository.findById(idAtividade).orElseThrow(ActivityNotFoundException::new);
-        var projeto = atividade.getProjeto();
+        var activity = activityRepository.findById(idAtividade).orElseThrow(ActivityNotFoundException::new);
+        var project = activity.getProjeto();
 
-        var ong = projeto.getOng();
+        var ong = project.getOng();
         if (!ong.getUsuarioResponsavel().getId().equals(idAdmin)) {
             throw new AccessDeniedException("Somente o admin da ong pode deletar atividades.");
         }
 
-        activityRepository.delete(atividade);
+        activityRepository.delete(activity);
     }
 
     @Transactional(readOnly = true)
     public InfoAtividadeResponse get(Long id) throws ActivityNotFoundException {
-        var atividade = activityRepository.findById(id).orElseThrow(ActivityNotFoundException::new);
-        var projeto = atividade.getProjeto();
-        var ong = projeto.getOng();
+        var activity = activityRepository.findById(id).orElseThrow(ActivityNotFoundException::new);
+        var project = activity.getProjeto();
+        var ong = project.getOng();
 
         var ongContexto = ongMapper.toOngContextoResponse(ong);
-        var projetoContexto = projetoMapper.toProjetoContextoResponse(projeto);
+        var projectContext = projetoMapper.toProjetoContextoResponse(project);
 
-        return toInfoAtividadeResponse(atividade, ongContexto, projetoContexto);
+        return toInfoAtividadeResponse(activity, ongContexto, projectContext);
     }
 
     /*

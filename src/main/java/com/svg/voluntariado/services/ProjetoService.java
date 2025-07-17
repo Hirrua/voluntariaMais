@@ -4,7 +4,7 @@ import com.svg.voluntariado.domain.dto.projeto.CreateProjetoRequest;
 import com.svg.voluntariado.domain.dto.projeto.SimpleInfoProjetoResponse;
 import com.svg.voluntariado.domain.dto.projeto.UpdateProjetoRequest;
 import com.svg.voluntariado.domain.dto.projeto.UpdateProjetoResponse;
-import com.svg.voluntariado.domain.mapper.ProjetoMapper;
+import com.svg.voluntariado.mapper.ProjetoMapper;
 import com.svg.voluntariado.exceptions.OngNotFoundException;
 import com.svg.voluntariado.exceptions.ProjectNotFoundException;
 import com.svg.voluntariado.repositories.OngRepository;

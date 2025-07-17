@@ -4,7 +4,7 @@ import com.svg.voluntariado.domain.dto.CreateProfileRequest;
 import com.svg.voluntariado.domain.dto.InfoPerfilResponse;
 import com.svg.voluntariado.domain.dto.UpdateInfoProfileRequest;
 import com.svg.voluntariado.domain.entities.UsuarioEntity;
-import com.svg.voluntariado.domain.mapper.ProfileMapper;
+import com.svg.voluntariado.mapper.ProfileMapper;
 import com.svg.voluntariado.exceptions.ProfileNotFoundException;
 import com.svg.voluntariado.exceptions.UserNotFoundException;
 import com.svg.voluntariado.repositories.VolunteerProfileRepository;

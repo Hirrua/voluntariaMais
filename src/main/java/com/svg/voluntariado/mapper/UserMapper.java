@@ -1,6 +1,6 @@
-package com.svg.voluntariado.domain.mapper;
+package com.svg.voluntariado.mapper;
 
-import com.svg.voluntariado.domain.dto.UserRegisterRequest;
+import com.svg.voluntariado.domain.dto.user.UserRegisterRequest;
 import com.svg.voluntariado.domain.entities.UsuarioEntity;
 import org.mapstruct.Mapper;
 
