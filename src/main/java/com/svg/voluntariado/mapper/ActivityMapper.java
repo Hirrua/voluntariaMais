@@ -1,11 +1,10 @@
-package com.svg.voluntariado.domain.mapper;
+package com.svg.voluntariado.mapper;
 
 import com.svg.voluntariado.domain.dto.atividade.CreateAtividadeRequest;
 import com.svg.voluntariado.domain.dto.atividade.SimpleInfoAtividadeResponse;
 import com.svg.voluntariado.domain.dto.atividade.UpdateAtividadeRequest;
 import com.svg.voluntariado.domain.dto.atividade.UpdateAtividadeResponse;
 import com.svg.voluntariado.domain.entities.AtividadeEntity;
-import com.svg.voluntariado.domain.entities.ProjetoEntity;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
@@ -15,7 +14,7 @@ import org.springframework.data.domain.Page;
 import java.util.List;
 
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.ERROR)
-public interface AtividadeMapper {
+public interface ActivityMapper {
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "dataCriacao", ignore = true)

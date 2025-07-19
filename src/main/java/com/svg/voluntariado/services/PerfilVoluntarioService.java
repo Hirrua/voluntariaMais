@@ -4,34 +4,34 @@ import com.svg.voluntariado.domain.dto.CreateProfileRequest;
 import com.svg.voluntariado.domain.dto.InfoPerfilResponse;
 import com.svg.voluntariado.domain.dto.UpdateInfoProfileRequest;
 import com.svg.voluntariado.domain.entities.UsuarioEntity;
-import com.svg.voluntariado.domain.mapper.ProfileMapper;
-import com.svg.voluntariado.repositories.PerfilVoluntarioRepository;
-import com.svg.voluntariado.repositories.UsuarioRepository;
+import com.svg.voluntariado.mapper.ProfileMapper;
+import com.svg.voluntariado.exceptions.ProfileNotFoundException;
+import com.svg.voluntariado.exceptions.UserNotFoundException;
+import com.svg.voluntariado.repositories.VolunteerProfileRepository;
+import com.svg.voluntariado.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.NoSuchElementException;
-
 @Service
 public class PerfilVoluntarioService {
 
-    private final UsuarioRepository usuarioRepository;
-    private final PerfilVoluntarioRepository perfilVoluntarioRepository;
+    private final UserRepository userRepository;
+    private final VolunteerProfileRepository volunteerProfileRepository;
     private final ProfileMapper profileMapper;
 
     @Autowired
-    public PerfilVoluntarioService(PerfilVoluntarioRepository perfilVoluntarioRepository, UsuarioRepository usuarioRepository, ProfileMapper profileMapper) {
-        this.usuarioRepository = usuarioRepository;
-        this.perfilVoluntarioRepository = perfilVoluntarioRepository;
+    public PerfilVoluntarioService(VolunteerProfileRepository volunteerProfileRepository, UserRepository userRepository, ProfileMapper profileMapper) {
+        this.userRepository = userRepository;
+        this.volunteerProfileRepository = volunteerProfileRepository;
         this.profileMapper = profileMapper;
     }
 
     @Transactional
     public Long create(CreateProfileRequest createProfileRequest) {
 
-        UsuarioEntity usuario = usuarioRepository.findById(createProfileRequest.id_usuario())
-                .orElseThrow(() -> new NoSuchElementException("Usuário não encontrado.")
+        UsuarioEntity usuario = userRepository.findById(createProfileRequest.id_usuario())
+                .orElseThrow(() -> new UserNotFoundException("Usuário não encontrado.")
         );
 
         if (usuario.getPerfilVoluntario() != null) {
@@ -42,7 +42,7 @@ public class PerfilVoluntarioService {
         novoPerfil.setUsuario(usuario);
 
         usuario.setPerfilVoluntario(novoPerfil);
-        usuarioRepository.save(usuario);
+        userRepository.save(usuario);
 
         return novoPerfil.getId();
     }
@@ -50,8 +50,8 @@ public class PerfilVoluntarioService {
     @Transactional(readOnly = true)
     public InfoPerfilResponse get(Long id) {
 
-        var perfil = perfilVoluntarioRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("Perfil não encontrado.")
+        var perfil = volunteerProfileRepository.findById(id)
+                .orElseThrow(() -> new ProfileNotFoundException("Perfil não encontrado.")
         );
 
 
@@ -61,8 +61,8 @@ public class PerfilVoluntarioService {
     @Transactional
     public InfoPerfilResponse update(Long id, UpdateInfoProfileRequest updateInfo) {
 
-        var perfil = perfilVoluntarioRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("Perfil não encontrado.")
+        var perfil = volunteerProfileRepository.findById(id)
+                .orElseThrow(() -> new ProfileNotFoundException("Perfil não encontrado.")
         );
 
         var infosMap = profileMapper.toPerfilVoluntarioEntity(updateInfo, perfil);
@@ -72,10 +72,10 @@ public class PerfilVoluntarioService {
     @Transactional
     public void delete(Long id) {
 
-        var perfil = perfilVoluntarioRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("Perfil não encontrado.")
+        var perfil = volunteerProfileRepository.findById(id)
+                .orElseThrow(() -> new ProfileNotFoundException("Perfil não encontrado.")
         );
 
-        perfilVoluntarioRepository.delete(perfil);
+        volunteerProfileRepository.delete(perfil);
     }
 }
