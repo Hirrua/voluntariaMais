@@ -10,7 +10,6 @@ import java.time.OffsetDateTime;
 @Getter
 @Setter
 @EqualsAndHashCode(of = "id")
-@AllArgsConstructor
 @NoArgsConstructor
 @Entity
 @Table(name = "tb_inscricao")
@@ -34,10 +33,14 @@ public class InscricaoEntity {
     private OffsetDateTime dataInscricao;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "status_inscricao", nullable = false, columnDefinition = "status_inscricao_enum")
+    @Column(name = "status_inscricao")
     private StatusInscricaoEnum status = StatusInscricaoEnum.PENDENTE;
 
     @OneToOne(mappedBy = "inscricao", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private FeedbackEntity feedback;
 
+    public InscricaoEntity(UsuarioEntity usuario, AtividadeEntity atividade) {
+        this.usuario = usuario;
+        this.atividade = atividade;
+    }
 }

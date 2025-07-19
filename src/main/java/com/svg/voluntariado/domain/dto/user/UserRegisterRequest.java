@@ -1,4 +1,4 @@
-package com.svg.voluntariado.domain.dto;
+package com.svg.voluntariado.domain.dto.user;
 
 import com.svg.voluntariado.domain.entities.EnderecoEntity;
 

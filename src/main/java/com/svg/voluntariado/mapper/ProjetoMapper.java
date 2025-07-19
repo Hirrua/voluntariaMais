@@ -1,4 +1,4 @@
-package com.svg.voluntariado.domain.mapper;
+package com.svg.voluntariado.mapper;
 
 import com.svg.voluntariado.domain.dto.projeto.*;
 import com.svg.voluntariado.domain.entities.ProjetoEntity;

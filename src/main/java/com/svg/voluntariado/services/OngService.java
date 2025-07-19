@@ -6,10 +6,10 @@ import com.svg.voluntariado.domain.dto.ong.ListOngResponse;
 import com.svg.voluntariado.domain.dto.ong.UpdateInfoOngRequest;
 import com.svg.voluntariado.domain.entities.OngEntity;
 import com.svg.voluntariado.domain.entities.UsuarioEntity;
-import com.svg.voluntariado.domain.mapper.OngMapper;
+import com.svg.voluntariado.mapper.OngMapper;
 import com.svg.voluntariado.exceptions.OngNotFoundException;
 import com.svg.voluntariado.repositories.OngRepository;
-import com.svg.voluntariado.repositories.UsuarioRepository;
+import com.svg.voluntariado.repositories.UserRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -17,29 +17,28 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.NoSuchElementException;
 
 @Service
 public class OngService {
 
     private final OngRepository ongRepository;
     private final OngMapper ongMapper;
-    private final UsuarioRepository usuarioRepository;
+    private final UserRepository userRepository;
 
-    public OngService(OngRepository ongRepository, OngMapper ongMapper, UsuarioRepository usuarioRepository) {
-        this.usuarioRepository = usuarioRepository;
+    public OngService(OngRepository ongRepository, OngMapper ongMapper, UserRepository userRepository) {
+        this.userRepository = userRepository;
         this.ongRepository = ongRepository;
         this.ongMapper = ongMapper;
     }
 
     @Transactional
     public Long create(CreateOngRequest createOngRequest) {
-        UsuarioEntity usuarioResponsavel = usuarioRepository.findById(createOngRequest.idUsuarioResponsavel())
+        UsuarioEntity responsibleUser = userRepository.findById(createOngRequest.idUsuarioResponsavel())
                 .orElseThrow(() -> new RuntimeException("Usuário responsável não encontrado com ID: " + createOngRequest.idUsuarioResponsavel())
         );
 
         var ongEntity = ongMapper.toOngEntity(createOngRequest);
-        ongEntity.setUsuarioResponsavel(usuarioResponsavel);
+        ongEntity.setUsuarioResponsavel(responsibleUser);
         var newOng = ongRepository.save(ongEntity);
 
         return newOng.getId();
