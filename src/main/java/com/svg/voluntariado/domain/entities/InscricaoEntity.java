@@ -4,6 +4,8 @@ import com.svg.voluntariado.domain.enums.StatusInscricaoEnum;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.time.OffsetDateTime;
 
@@ -33,6 +35,7 @@ public class InscricaoEntity {
     private OffsetDateTime dataInscricao;
 
     @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Column(name = "status_inscricao")
     private StatusInscricaoEnum status = StatusInscricaoEnum.PENDENTE;
 
