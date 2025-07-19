@@ -8,7 +8,7 @@ public record SimpleInfoActivityResponse(
         String descricaoAtividade,
         OffsetDateTime dataHoraInicioAtividade,
         OffsetDateTime dataHoraFimAtividade,
-        Integer vagasDisponiveisAtividade,
+        Integer vagasTotais,
         Integer vagasPreenchidasAtividade,
         OffsetDateTime dataCriacao
 ) {

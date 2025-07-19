@@ -22,8 +22,10 @@ public interface ActivityMapper {
     @Mapping(target = "vagasPreenchidasAtividade", ignore = true)
     @Mapping(target = "inscricao", ignore = true)
     @Mapping(target = "projeto", ignore = true)
+    @Mapping(target = "version", ignore = true)
     AtividadeEntity toAtividadeEntity(CreateActivityRequest createActivityRequest);
 
+    @Mapping(target = "vagasTotais", expression = "java(entity.getVagasDisponiveis())")
     List<SimpleInfoActivityResponse> toSimpleInfoAtividadeResponse(Page<AtividadeEntity> entities);
 
     UpdateActivityResponse toUpdateAtividadeResponse(AtividadeEntity entity);
@@ -34,5 +36,7 @@ public interface ActivityMapper {
     @Mapping(target = "inscricao", ignore = true)
     @Mapping(target = "projeto", ignore = true)
     @Mapping(target = "ultimaAtualizacao", ignore = true)
+    @Mapping(target = "version", ignore = true)
+    @Mapping(target = "vagasTotais", ignore = true)
     AtividadeEntity toAtividadeEntity(UpdateActivityRequest atividadeRequest, @MappingTarget AtividadeEntity entity);
 }

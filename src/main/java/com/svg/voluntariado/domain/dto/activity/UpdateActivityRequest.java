@@ -8,6 +8,6 @@ public record UpdateActivityRequest(
         OffsetDateTime dataHoraInicioAtividade,
         OffsetDateTime dataHoraFimAtividade,
         String localAtividade,
-        Integer vagasDisponiveisAtividade
+        Integer vagasTotais
 ) {
 }

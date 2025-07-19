@@ -9,7 +9,7 @@ public record UpdateActivityResponse(
         OffsetDateTime dataHoraInicioAtividade,
         OffsetDateTime dataHoraFimAtividade,
         String localAtividade,
-        Integer vagasDisponiveisAtividade,
+        Integer vagasTotais,
         OffsetDateTime ultimaAtualizacao
 ) {
 }

@@ -124,7 +124,7 @@ public class ActivityService {
                 atividade.getDataHoraInicioAtividade(),
                 atividade.getDataHoraFimAtividade(),
                 atividade.getLocalAtividade(),
-                atividade.getVagasDisponiveisAtividade(),
+                atividade.getVagasTotais(),
                 atividade.getVagasPreenchidasAtividade(),
                 atividade.getDataCriacao(),
                 projetoContexto,
