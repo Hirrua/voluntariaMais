@@ -1,5 +1,6 @@
 package com.svg.voluntariado.services;
 
+import com.svg.voluntariado.domain.dto.EmailRequest;
 import com.svg.voluntariado.domain.dto.inscricao.SubscriptionResponse;
 import com.svg.voluntariado.domain.dto.user.InfoUserSubscription;
 import com.svg.voluntariado.domain.entities.InscricaoEntity;
@@ -25,27 +26,26 @@ public class SubscriptionService {
     private final VolunteerProfileRepository volunteerProfileRepository;
     private final ActivityRepository activityRepository;
     private final SubscriptionRepository subscriptionRepository;
+    private final EmailService emailService;
 
     @Autowired
     public SubscriptionService(UserRepository userRepository,
                                VolunteerProfileRepository volunteerProfileRepository,
                                ActivityRepository activityRepository,
-                               SubscriptionRepository subscriptionRepository) {
+                               SubscriptionRepository subscriptionRepository,
+                               EmailService emailService) {
         this.userRepository = userRepository;
         this.activityRepository = activityRepository;
         this.subscriptionRepository = subscriptionRepository;
         this.volunteerProfileRepository = volunteerProfileRepository;
+        this.emailService = emailService;
     }
 
     @Transactional
     public Long create(Long idAtividade, Long idUser) throws ActivityNotFoundException, UserNotFoundException {
         var activity = activityRepository.findById(idAtividade).orElseThrow(ActivityNotFoundException::new);
-        var user = userRepository.findById(idUser).orElseThrow(UserNotFoundException::new);
-
-        var profile = volunteerProfileRepository.findById(idUser);
-        if (profile.isEmpty()) {
-            throw  new ProfileNotFoundException();
-        }
+        var user = userRepository.findByIdIfProfileExists(idUser)
+                .orElseThrow(() -> new ProfileNotFoundException("Usuário não encontrado ou não possui perfil de voluntário."));
 
         if (activity.getVagasDisponiveisAtividade() <= activity.getVagasPreenchidasAtividade()) {
             throw new IllegalArgumentException();
@@ -55,6 +55,10 @@ public class SubscriptionService {
         activity.setVagasPreenchidasAtividade(activity.getVagasPreenchidasAtividade() + 1);
         activity.setVagasDisponiveisAtividade(activity.getVagasDisponiveisAtividade() - 1);
         activityRepository.save(activity);
+
+        emailService.sendEmail(new EmailRequest(user.getEmail(),
+                "Confirme sua inscrição - " + activity.getNomeAtividade(),
+                "Olá " + user.getUsername() + "Por favor, confirme a sua participação!"));
         return newSubscription.getId();
     }
 
@@ -78,5 +82,4 @@ public class SubscriptionService {
                 )
         ).toList();
     }
-
 }

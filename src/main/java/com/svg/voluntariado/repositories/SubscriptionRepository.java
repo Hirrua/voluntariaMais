@@ -11,7 +11,7 @@ public interface SubscriptionRepository extends JpaRepository<InscricaoEntity, L
 
     @Query(value = """
             SELECT
-                i.id_inscricao AS idInscricao, 
+                i.id_inscricao AS idInscricao,
                 i.data_inscricao AS dataInscricao,
                 i.status_inscricao AS status,
                 u.nome AS usuarioNome,
