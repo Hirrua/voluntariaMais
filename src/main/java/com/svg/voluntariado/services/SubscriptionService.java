@@ -11,7 +11,6 @@ import com.svg.voluntariado.exceptions.UserNotFoundException;
 import com.svg.voluntariado.projection.SubscriptionProjection;
 import com.svg.voluntariado.repositories.ActivityRepository;
 import com.svg.voluntariado.repositories.SubscriptionRepository;
-import com.svg.voluntariado.repositories.VolunteerProfileRepository;
 import com.svg.voluntariado.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -23,21 +22,18 @@ import java.util.List;
 public class SubscriptionService {
 
     private final UserRepository userRepository;
-    private final VolunteerProfileRepository volunteerProfileRepository;
     private final ActivityRepository activityRepository;
     private final SubscriptionRepository subscriptionRepository;
     private final EmailService emailService;
 
     @Autowired
     public SubscriptionService(UserRepository userRepository,
-                               VolunteerProfileRepository volunteerProfileRepository,
                                ActivityRepository activityRepository,
                                SubscriptionRepository subscriptionRepository,
                                EmailService emailService) {
         this.userRepository = userRepository;
         this.activityRepository = activityRepository;
         this.subscriptionRepository = subscriptionRepository;
-        this.volunteerProfileRepository = volunteerProfileRepository;
         this.emailService = emailService;
     }
 
@@ -58,7 +54,7 @@ public class SubscriptionService {
 
         emailService.sendEmail(new EmailRequest(user.getEmail(),
                 "Confirme sua inscrição - " + activity.getNomeAtividade(),
-                "Olá " + user.getUsername() + "Por favor, confirme a sua participação!"));
+                "Olá " + user.getNome() + "Por favor, confirme a sua participação!"));
         return newSubscription.getId();
     }
 
