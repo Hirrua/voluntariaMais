@@ -1,9 +1,9 @@
 package com.svg.voluntariado.mapper;
 
-import com.svg.voluntariado.domain.dto.atividade.CreateAtividadeRequest;
-import com.svg.voluntariado.domain.dto.atividade.SimpleInfoAtividadeResponse;
-import com.svg.voluntariado.domain.dto.atividade.UpdateAtividadeRequest;
-import com.svg.voluntariado.domain.dto.atividade.UpdateAtividadeResponse;
+import com.svg.voluntariado.domain.dto.activity.CreateActivityRequest;
+import com.svg.voluntariado.domain.dto.activity.SimpleInfoActivityResponse;
+import com.svg.voluntariado.domain.dto.activity.UpdateActivityRequest;
+import com.svg.voluntariado.domain.dto.activity.UpdateActivityResponse;
 import com.svg.voluntariado.domain.entities.AtividadeEntity;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -22,11 +22,11 @@ public interface ActivityMapper {
     @Mapping(target = "vagasPreenchidasAtividade", ignore = true)
     @Mapping(target = "inscricao", ignore = true)
     @Mapping(target = "projeto", ignore = true)
-    AtividadeEntity toAtividadeEntity(CreateAtividadeRequest createAtividadeRequest);
+    AtividadeEntity toAtividadeEntity(CreateActivityRequest createActivityRequest);
 
-    List<SimpleInfoAtividadeResponse> toSimpleInfoAtividadeResponse(Page<AtividadeEntity> entities);
+    List<SimpleInfoActivityResponse> toSimpleInfoAtividadeResponse(Page<AtividadeEntity> entities);
 
-    UpdateAtividadeResponse toUpdateAtividadeResponse(AtividadeEntity entity);
+    UpdateActivityResponse toUpdateAtividadeResponse(AtividadeEntity entity);
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "dataCriacao", ignore = true)
@@ -34,5 +34,5 @@ public interface ActivityMapper {
     @Mapping(target = "inscricao", ignore = true)
     @Mapping(target = "projeto", ignore = true)
     @Mapping(target = "ultimaAtualizacao", ignore = true)
-    AtividadeEntity toAtividadeEntity(UpdateAtividadeRequest atividadeRequest, @MappingTarget AtividadeEntity entity);
+    AtividadeEntity toAtividadeEntity(UpdateActivityRequest atividadeRequest, @MappingTarget AtividadeEntity entity);
 }

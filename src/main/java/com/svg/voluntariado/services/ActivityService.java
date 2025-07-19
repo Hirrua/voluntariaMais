@@ -1,12 +1,12 @@
 package com.svg.voluntariado.services;
 
-import com.svg.voluntariado.domain.dto.atividade.*;
-import com.svg.voluntariado.domain.dto.ong.OngContextoResponse;
-import com.svg.voluntariado.domain.dto.projeto.ProjetoContextoResponse;
+import com.svg.voluntariado.domain.dto.activity.*;
+import com.svg.voluntariado.domain.dto.ong.OngContextResponse;
+import com.svg.voluntariado.domain.dto.project.ProjectContextResponse;
 import com.svg.voluntariado.domain.entities.AtividadeEntity;
 import com.svg.voluntariado.mapper.ActivityMapper;
 import com.svg.voluntariado.mapper.OngMapper;
-import com.svg.voluntariado.mapper.ProjetoMapper;
+import com.svg.voluntariado.mapper.ProjectMapper;
 import com.svg.voluntariado.exceptions.ActivityNotFoundException;
 import com.svg.voluntariado.exceptions.OngNotFoundException;
 import com.svg.voluntariado.exceptions.ProjectNotFoundException;
@@ -28,23 +28,23 @@ public class ActivityService {
     private final ProjectRepository projectRepository;
     private final ActivityMapper activityMapper;
     private final OngRepository ongRepository;
-    private final ProjetoMapper projetoMapper;
+    private final ProjectMapper projectMapper;
     private final OngMapper ongMapper;
 
     public ActivityService(ActivityRepository activityRepository, ProjectRepository projectRepository,
                            ActivityMapper activityMapper, OngRepository ongRepository,
-                           ProjetoMapper projetoMapper, OngMapper ongMapper) {
+                           ProjectMapper projectMapper, OngMapper ongMapper) {
         this.activityRepository = activityRepository;
         this.projectRepository = projectRepository;
         this.activityMapper = activityMapper;
         this.ongRepository = ongRepository;
-        this.projetoMapper = projetoMapper;
+        this.projectMapper = projectMapper;
         this.ongMapper = ongMapper;
     }
 
     @Transactional
-    public Long create(CreateAtividadeRequest createAtividadeRequest, Long idAdmin) throws AccessDeniedException {
-        var project = projectRepository.findById(createAtividadeRequest.idProjeto());
+    public Long create(CreateActivityRequest createActivityRequest, Long idAdmin) throws AccessDeniedException {
+        var project = projectRepository.findById(createActivityRequest.idProjeto());
         if (project.isEmpty()) {
             throw  new ProjectNotFoundException();
         }
@@ -56,14 +56,14 @@ public class ActivityService {
 
         // TODO validar as datas
 
-        var activity = activityMapper.toAtividadeEntity(createAtividadeRequest);
+        var activity = activityMapper.toAtividadeEntity(createActivityRequest);
         activity.setProjeto(project.get());
         activityRepository.save(activity);
         return activity.getId();
     }
 
     @Transactional(readOnly = true)
-    public List<SimpleInfoAtividadeResponse> getAllActivities(int page, int itens) throws ActivityNotFoundException {
+    public List<SimpleInfoActivityResponse> getAllActivities(int page, int itens) throws ActivityNotFoundException {
         var atividades = activityRepository.findAll(PageRequest.of(page, itens));
         if (atividades.isEmpty()) {
             throw new ActivityNotFoundException("Nenhuma atividade foi criada.");
@@ -72,7 +72,7 @@ public class ActivityService {
     }
 
     @Transactional
-    public UpdateAtividadeResponse update(Long idAtividade, Long idAdmin, UpdateAtividadeRequest atividadeRequest)
+    public UpdateActivityResponse update(Long idAtividade, Long idAdmin, UpdateActivityRequest atividadeRequest)
             throws ActivityNotFoundException, AccessDeniedException {
         var activity = activityRepository.findById(idAtividade).orElseThrow(ActivityNotFoundException::new);
         var project = activity.getProjeto();
@@ -102,13 +102,13 @@ public class ActivityService {
     }
 
     @Transactional(readOnly = true)
-    public InfoAtividadeResponse get(Long id) throws ActivityNotFoundException {
+    public InfoActivityResponse get(Long id) throws ActivityNotFoundException {
         var activity = activityRepository.findById(id).orElseThrow(ActivityNotFoundException::new);
         var project = activity.getProjeto();
         var ong = project.getOng();
 
         var ongContexto = ongMapper.toOngContextoResponse(ong);
-        var projectContext = projetoMapper.toProjetoContextoResponse(project);
+        var projectContext = projectMapper.toProjetoContextoResponse(project);
 
         return toInfoAtividadeResponse(activity, ongContexto, projectContext);
     }
@@ -116,8 +116,8 @@ public class ActivityService {
     /*
     * Maneira mais simples e fácil (do que mapstruct) de conseguir controlar o DTO
     * */
-    private InfoAtividadeResponse toInfoAtividadeResponse(AtividadeEntity atividade, OngContextoResponse ongContexto, ProjetoContextoResponse projetoContexto) {
-        return new InfoAtividadeResponse(
+    private InfoActivityResponse toInfoAtividadeResponse(AtividadeEntity atividade, OngContextResponse ongContexto, ProjectContextResponse projetoContexto) {
+        return new InfoActivityResponse(
                 atividade.getId(),
                 atividade.getNomeAtividade(),
                 atividade.getDescricaoAtividade(),

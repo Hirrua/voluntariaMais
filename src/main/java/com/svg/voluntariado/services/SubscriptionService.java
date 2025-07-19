@@ -1,7 +1,7 @@
 package com.svg.voluntariado.services;
 
-import com.svg.voluntariado.domain.dto.EmailRequest;
-import com.svg.voluntariado.domain.dto.inscricao.SubscriptionResponse;
+import com.svg.voluntariado.domain.dto.email.EmailRequest;
+import com.svg.voluntariado.domain.dto.subscription.SubscriptionResponse;
 import com.svg.voluntariado.domain.dto.user.InfoUserSubscription;
 import com.svg.voluntariado.domain.entities.InscricaoEntity;
 import com.svg.voluntariado.exceptions.ActivityNotFoundException;

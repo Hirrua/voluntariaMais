@@ -1,7 +1,7 @@
 package com.svg.voluntariado.services;
 
-import com.svg.voluntariado.domain.dto.LoginRequest;
-import com.svg.voluntariado.domain.dto.LoginResponse;
+import com.svg.voluntariado.domain.dto.user.LoginRequest;
+import com.svg.voluntariado.domain.dto.user.LoginResponse;
 import com.svg.voluntariado.domain.dto.user.UserRegisterRequest;
 import com.svg.voluntariado.domain.entities.RoleEntity;
 import com.svg.voluntariado.mapper.UserMapper;
