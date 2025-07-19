@@ -4,6 +4,8 @@ import com.svg.voluntariado.domain.enums.StatusProjetoEnum;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
@@ -43,6 +45,7 @@ public class ProjetoEntity {
     private LocalDate dataFimPrevista;
 
     @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Column(name = "status_projeto")
     private StatusProjetoEnum status  = StatusProjetoEnum.PLANEJAMENTO;
 
