@@ -1,8 +1,8 @@
 package com.svg.voluntariado.mapper;
 
-import com.svg.voluntariado.domain.dto.CreateProfileRequest;
-import com.svg.voluntariado.domain.dto.InfoPerfilResponse;
-import com.svg.voluntariado.domain.dto.UpdateInfoProfileRequest;
+import com.svg.voluntariado.domain.dto.profile.CreateProfileRequest;
+import com.svg.voluntariado.domain.dto.profile.InfoProfileResponse;
+import com.svg.voluntariado.domain.dto.profile.UpdateInfoProfileRequest;
 import com.svg.voluntariado.domain.entities.PerfilVoluntarioEntity;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -16,7 +16,7 @@ public interface ProfileMapper {
     @Mapping(target = "usuario", ignore = true)
     PerfilVoluntarioEntity toPerfilVoluntarioEntity(CreateProfileRequest createProfileRequest);
 
-    InfoPerfilResponse toInfoPerfilResponse(PerfilVoluntarioEntity perfil);
+    InfoProfileResponse toInfoPerfilResponse(PerfilVoluntarioEntity perfil);
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "usuario", ignore = true)

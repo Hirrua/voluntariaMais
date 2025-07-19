@@ -1,18 +1,16 @@
 package com.svg.voluntariado.services;
 
-import com.svg.voluntariado.domain.dto.EmailRequest;
-import com.svg.voluntariado.domain.dto.inscricao.SubscriptionResponse;
+import com.svg.voluntariado.domain.dto.email.EmailRequest;
+import com.svg.voluntariado.domain.dto.subscription.SubscriptionResponse;
 import com.svg.voluntariado.domain.dto.user.InfoUserSubscription;
 import com.svg.voluntariado.domain.entities.InscricaoEntity;
-import com.svg.voluntariado.exceptions.ActivityNotFoundException;
-import com.svg.voluntariado.exceptions.ProfileNotFoundException;
-import com.svg.voluntariado.exceptions.SubscriptionNotFoundException;
-import com.svg.voluntariado.exceptions.UserNotFoundException;
+import com.svg.voluntariado.exceptions.*;
 import com.svg.voluntariado.projection.SubscriptionProjection;
 import com.svg.voluntariado.repositories.ActivityRepository;
 import com.svg.voluntariado.repositories.SubscriptionRepository;
 import com.svg.voluntariado.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,23 +37,26 @@ public class SubscriptionService {
 
     @Transactional
     public Long create(Long idAtividade, Long idUser) throws ActivityNotFoundException, UserNotFoundException {
-        var activity = activityRepository.findById(idAtividade).orElseThrow(ActivityNotFoundException::new);
-        var user = userRepository.findByIdIfProfileExists(idUser)
-                .orElseThrow(() -> new ProfileNotFoundException("Usuário não encontrado ou não possui perfil de voluntário."));
+        try {
+            var activity = activityRepository.findById(idAtividade).orElseThrow(ActivityNotFoundException::new);
+            var user = userRepository.findByIdIfProfileExists(idUser)
+                    .orElseThrow(() -> new ProfileNotFoundException("Usuário não encontrado ou não possui perfil de voluntário."));
 
-        if (activity.getVagasDisponiveisAtividade() <= activity.getVagasPreenchidasAtividade()) {
-            throw new IllegalArgumentException();
+            if (activity.getVagasPreenchidasAtividade() >= activity.getVagasTotais()) {
+                throw new IllegalArgumentException("Não há mais vagas para esta atividade.");
+            }
+
+            var newSubscription = subscriptionRepository.save(new InscricaoEntity(user, activity));
+            activity.setVagasPreenchidasAtividade(activity.getVagasPreenchidasAtividade() + 1);
+            activityRepository.save(activity);
+
+            emailService.sendEmail(new EmailRequest(user.getEmail(),
+                    "Confirme sua inscrição - " + activity.getNomeAtividade(),
+                    "Olá " + user.getNome() + " Por favor, confirme a sua participação!"));
+            return newSubscription.getId();
+        } catch (ObjectOptimisticLockingFailureException e) {
+            throw new FilledSubscriptionException();
         }
-
-        var newSubscription = subscriptionRepository.save(new InscricaoEntity(user, activity));
-        activity.setVagasPreenchidasAtividade(activity.getVagasPreenchidasAtividade() + 1);
-        activity.setVagasDisponiveisAtividade(activity.getVagasDisponiveisAtividade() - 1);
-        activityRepository.save(activity);
-
-        emailService.sendEmail(new EmailRequest(user.getEmail(),
-                "Confirme sua inscrição - " + activity.getNomeAtividade(),
-                "Olá " + user.getNome() + "Por favor, confirme a sua participação!"));
-        return newSubscription.getId();
     }
 
     @Transactional(readOnly = true)

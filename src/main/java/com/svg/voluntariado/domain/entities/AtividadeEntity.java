@@ -37,10 +37,10 @@ public class AtividadeEntity {
     @Column(name = "local_atividade")
     private String localAtividade;
 
-    @Column(name = "vagas_disponiveis_atividade")
-    private Integer vagasDisponiveisAtividade;
+    @Column(name = "vagas_totais", nullable = false)
+    private Integer vagasTotais;
 
-    @Column(name = "vagas_preenchidas_atividade")
+    @Column(name = "vagas_preenchidas_atividade", nullable = false)
     private Integer vagasPreenchidasAtividade = 0;
 
     @CreationTimestamp
@@ -56,4 +56,11 @@ public class AtividadeEntity {
 
     @OneToMany(mappedBy = "atividade", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private Set<InscricaoEntity> inscricao = new HashSet<>();
+
+    @Version
+    private Integer version;
+
+    public Integer getVagasDisponiveis() {
+        return this.vagasTotais - this.vagasPreenchidasAtividade;
+    }
 }

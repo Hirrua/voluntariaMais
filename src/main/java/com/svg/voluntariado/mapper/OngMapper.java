@@ -36,5 +36,5 @@ public interface OngMapper {
     @Mapping(target = "usuarioResponsavel", ignore = true)
     OngEntity toOngEntity(UpdateInfoOngRequest updateInfoOngRequest, @MappingTarget OngEntity ongEntity);
 
-    OngContextoResponse toOngContextoResponse(OngEntity ong);
+    OngContextResponse toOngContextoResponse(OngEntity ong);
 }
