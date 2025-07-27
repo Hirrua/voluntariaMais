@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface SubscriptionRepository extends JpaRepository<InscricaoEntity, Long> {
 
@@ -22,4 +23,5 @@ public interface SubscriptionRepository extends JpaRepository<InscricaoEntity, L
             nativeQuery = true)
     List<SubscriptionProjection> findSubscriptionFlatten(Long idAtividade);
 
+    Optional<InscricaoEntity> findByTokenConfirmacao(String token);
 }
