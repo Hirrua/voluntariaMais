@@ -4,6 +4,7 @@ import com.svg.voluntariado.domain.dto.email.EmailRequest;
 import com.svg.voluntariado.domain.dto.subscription.SubscriptionResponse;
 import com.svg.voluntariado.domain.dto.user.InfoUserSubscription;
 import com.svg.voluntariado.domain.entities.InscricaoEntity;
+import com.svg.voluntariado.domain.enums.StatusInscricaoEnum;
 import com.svg.voluntariado.exceptions.*;
 import com.svg.voluntariado.projection.SubscriptionProjection;
 import com.svg.voluntariado.repositories.ActivityRepository;
@@ -14,7 +15,10 @@ import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.OffsetDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class SubscriptionService {
@@ -47,12 +51,21 @@ public class SubscriptionService {
             }
 
             var newSubscription = subscriptionRepository.save(new InscricaoEntity(user, activity));
-            activity.setVagasPreenchidasAtividade(activity.getVagasPreenchidasAtividade() + 1);
-            activityRepository.save(activity);
+            subscriptionRepository.save(newSubscription);
 
-            emailService.sendEmail(new EmailRequest(user.getEmail(),
+            String confirmationUrl = "https://prime-free-tiger.ngrok-free.app/api/inscricao/confirmar?token=" + newSubscription.getTokenConfirmacao();
+            Map<String, Object> emailVar = new HashMap<>();
+            emailVar.put("userName", user.getNome());
+            emailVar.put("activityName", activity.getNomeAtividade());
+            emailVar.put("confirmationUrl", confirmationUrl);
+
+            emailService.sendHtmlEmail(
+                    user.getEmail(),
                     "Confirme sua inscrição - " + activity.getNomeAtividade(),
-                    "Olá " + user.getNome() + " Por favor, confirme a sua participação!"));
+                    "send-email.html",
+                    emailVar
+            );
+
             return newSubscription.getId();
         } catch (ObjectOptimisticLockingFailureException e) {
             throw new FilledSubscriptionException();
@@ -78,5 +91,33 @@ public class SubscriptionService {
                         )
                 )
         ).toList();
+    }
+
+    @Transactional
+    public void subscriptionConfirm(String token) {
+        var subscription = subscriptionRepository.findByTokenConfirmacao(token)
+                .orElseThrow(() -> new TokenNotFoundException("Token de confirmação inválido."));
+
+        if (subscription.getDataExpiracaoToken().isBefore(OffsetDateTime.now())) {
+            throw new ExpiredTokenException("Token de confirmação expirado.");
+        }
+
+        if (subscription.getStatus() == StatusInscricaoEnum.CONFIRMADA) {
+            throw new SubscriptionConfirmedException("Esta inscrição já foi confirmada.");
+        }
+
+        subscription.setStatus(StatusInscricaoEnum.CONFIRMADA);
+        subscription.setTokenConfirmacao(null);
+        subscription.setDataExpiracaoToken(null);
+
+        var activity = subscription.getAtividade();
+        if (activity.getVagasPreenchidasAtividade() >= activity.getVagasTotais()) {
+            throw new FilledSubscriptionException("Desculpe, as vagas para esta atividade acabaram de se esgotar.");
+        }
+
+        activity.setVagasPreenchidasAtividade(activity.getVagasPreenchidasAtividade() + 1);
+        activityRepository.save(activity);
+
+        subscriptionRepository.save(subscription);
     }
 }
