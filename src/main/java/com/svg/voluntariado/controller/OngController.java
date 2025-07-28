@@ -37,6 +37,12 @@ public class OngController {
         return ResponseEntity.ok().body(ongInfos);
     }
 
+    @GetMapping("/info/about/{idOng}")
+    public ResponseEntity<?> getInfoOngAndProject(@PathVariable(value = "idOng") Long idOng) {
+        var infos = ongService.findOngAndProjects(idOng);
+        return ResponseEntity.ok().body(infos);
+    }
+
     @GetMapping("/info")
     public ResponseEntity<?> findAllOng(@RequestParam int page, @RequestParam int itens) {
         List<ListOngResponse> ongResponseList = ongService.findAllOng(page, itens);
