@@ -1,11 +1,9 @@
 package com.svg.voluntariado.services;
 
-import com.svg.voluntariado.domain.dto.ong.CreateOngRequest;
-import com.svg.voluntariado.domain.dto.ong.InfoOngResponse;
-import com.svg.voluntariado.domain.dto.ong.ListOngResponse;
-import com.svg.voluntariado.domain.dto.ong.UpdateInfoOngRequest;
+import com.svg.voluntariado.domain.dto.ong.*;
 import com.svg.voluntariado.domain.entities.OngEntity;
 import com.svg.voluntariado.domain.entities.UsuarioEntity;
+import com.svg.voluntariado.exceptions.ProjectNotFoundException;
 import com.svg.voluntariado.mapper.OngMapper;
 import com.svg.voluntariado.exceptions.OngNotFoundException;
 import com.svg.voluntariado.repositories.OngRepository;
@@ -51,7 +49,19 @@ public class OngService {
         return ongMapper.toInfoOngResponse(ong);
     }
 
-    // TODO método para buscar ong e os projetos vinculados a ela
+    public InfoOngAndProjectResponse findOngAndProjects(Long idOng) {
+        var ongEntity = ongRepository.findById(idOng);
+        if (ongEntity.isEmpty()) {
+            throw new OngNotFoundException();
+        }
+
+        var projectEntity = ongEntity.get().getProjetos();
+        if (projectEntity.isEmpty()) {
+            throw new ProjectNotFoundException("Essa ong não possui nenhum projeto cadastrado.");
+        }
+
+        return ongMapper.toInfoOngAndProjectResponse(ongEntity.get());
+    }
 
     public List<ListOngResponse> findAllOng(int page, int itens) {
         Page<OngEntity> ongEntities = ongRepository.findAll(PageRequest.of(page, itens));

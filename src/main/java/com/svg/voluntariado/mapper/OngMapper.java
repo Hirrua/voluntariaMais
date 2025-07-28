@@ -1,7 +1,9 @@
 package com.svg.voluntariado.mapper;
 
 import com.svg.voluntariado.domain.dto.ong.*;
+import com.svg.voluntariado.domain.dto.project.SimpleInfoProjectResponse;
 import com.svg.voluntariado.domain.entities.OngEntity;
+import com.svg.voluntariado.domain.entities.ProjetoEntity;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
@@ -37,4 +39,8 @@ public interface OngMapper {
     OngEntity toOngEntity(UpdateInfoOngRequest updateInfoOngRequest, @MappingTarget OngEntity ongEntity);
 
     OngContextResponse toOngContextoResponse(OngEntity ong);
+
+    @Mapping(source = "projetos", target = "projectResponse")
+    InfoOngAndProjectResponse toInfoOngAndProjectResponse(OngEntity ong);
+    SimpleInfoProjectResponse toSimpleInfoProjectResponse(ProjetoEntity projeto);
 }
