@@ -15,6 +15,7 @@ public interface SubscriptionRepository extends JpaRepository<InscricaoEntity, L
                 i.id_inscricao AS idInscricao,
                 i.data_inscricao AS dataInscricao,
                 i.status_inscricao AS status,
+                u.id AS usuarioId,
                 u.nome AS usuarioNome,
                 u.email AS usuarioEmail
             FROM tb_inscricao i
@@ -24,4 +25,17 @@ public interface SubscriptionRepository extends JpaRepository<InscricaoEntity, L
     List<SubscriptionProjection> findSubscriptionFlatten(Long idAtividade);
 
     Optional<InscricaoEntity> findByTokenConfirmacao(String token);
+
+    @Query(value = """
+            SELECT
+                i.id_inscricao AS idInscricao,
+                i.status_inscricao AS status,
+                u.id AS usuarioId,
+                u.nome AS usuarioNome,
+                u.email AS usuarioEmail
+            FROM tb_inscricao i
+            JOIN tb_usuarios u ON i.id_usuario = u.id_usuario
+            WHERE i.id_inscricao = :id_inscricao""",
+            nativeQuery = true)
+    Optional<SubscriptionProjection> findOneSubscriptionFlatten(Long id_inscricao);
 }
