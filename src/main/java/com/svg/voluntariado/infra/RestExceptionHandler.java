@@ -69,4 +69,10 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         RestErrorMessage exceptionResponse = new RestErrorMessage(HttpStatus.NOT_FOUND, exception.getMessage());
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exceptionResponse);
     }
+
+    @ExceptionHandler(InvalidScoreException.class)
+    private ResponseEntity<RestErrorMessage> invalidScoreHandler(InvalidScoreException exception) {
+        RestErrorMessage exceptionResponse = new RestErrorMessage(HttpStatus.NOT_ACCEPTABLE, exception.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body(exceptionResponse);
+    }
 }

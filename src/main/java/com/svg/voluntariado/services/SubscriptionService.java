@@ -86,6 +86,7 @@ public class SubscriptionService {
                         p.getDataInscricao(),
                         p.getStatus(),
                         new InfoUserSubscription(
+                                p.getUsuarioId(),
                                 p.getUsuarioNome(),
                                 p.getUsuarioEmail()
                         )
