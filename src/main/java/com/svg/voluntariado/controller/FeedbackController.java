@@ -30,7 +30,17 @@ public class FeedbackController {
                                            @AuthenticationPrincipal Jwt principal) throws AccessDeniedException {
         var idUser = Long.parseLong(principal.getSubject());
         var feedbackResponse = feedbackService.create(insertFeedbackRequest, idSubscription, idUser);
-//        return ResponseEntity.created(URI.create("/api/feedback/" + feedbackResponse.id())).body("Comentário adicionado com sucesso.");
-        return ResponseEntity.ok(feedbackResponse);
+        return ResponseEntity.created(URI.create("/api/feedback/" + feedbackResponse.id())).body("Comentário adicionado com sucesso.");
     }
+
+    @PutMapping("/{idFeedback}")
+    @PreAuthorize("hasRole('VOLUNTARIO')")
+    public ResponseEntity<?> updateFeedback(@RequestBody InsertFeedbackRequest updateFeedbackRequest,
+                                            @PathVariable(value = "idFeedback") Long idFeedback,
+                                            @AuthenticationPrincipal Jwt principal) throws AccessDeniedException {
+        var idUser = Long.parseLong(principal.getSubject());
+        feedbackService.update(updateFeedbackRequest, idFeedback, idUser);
+        return ResponseEntity.ok().body("Comentário atualizado");
+    }
+
 }
