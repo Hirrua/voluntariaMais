@@ -40,7 +40,17 @@ public class FeedbackController {
                                             @AuthenticationPrincipal Jwt principal) throws AccessDeniedException {
         var idUser = Long.parseLong(principal.getSubject());
         feedbackService.update(updateFeedbackRequest, idFeedback, idUser);
-        return ResponseEntity.ok().body("Comentário atualizado");
+        return ResponseEntity.ok().body("Comentário atualizado.");
     }
+
+    @DeleteMapping("/{idFeedback}")
+    @PreAuthorize("hasAnyRole('VOLUNTARIO', 'ADMIN_ONG', 'ADMIN_PLATAFORMA')")
+    public ResponseEntity<?> deleteFeedback(@PathVariable(value = "idFeedback") Long idFeedback,
+                                            @AuthenticationPrincipal Jwt principal) {
+        var idUser = Long.parseLong(principal.getSubject());
+        feedbackService.delete(idFeedback, idUser);
+        return ResponseEntity.ok().body("Comentário deletado.");
+    }
+
 
 }

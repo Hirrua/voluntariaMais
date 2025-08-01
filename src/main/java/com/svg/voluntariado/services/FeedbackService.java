@@ -7,6 +7,7 @@ import com.svg.voluntariado.domain.entities.FeedbackEntity;
 import com.svg.voluntariado.domain.entities.InscricaoEntity;
 import com.svg.voluntariado.domain.enums.StatusInscricaoEnum;
 import com.svg.voluntariado.exceptions.InvalidScoreException;
+import com.svg.voluntariado.exceptions.UserUnauthorizedException;
 import com.svg.voluntariado.mapper.FeedbackMapper;
 import com.svg.voluntariado.projection.SubscriptionProjection;
 import com.svg.voluntariado.repositories.FeedbackRepository;
@@ -32,7 +33,7 @@ public class FeedbackService {
     }
 
     @Transactional
-    public InsertFeedbackResponse create(InsertFeedbackRequest insertFeedbackRequest, Long idSubscription, Long idUser) throws AccessDeniedException {
+    public InsertFeedbackResponse create(InsertFeedbackRequest insertFeedbackRequest, Long idSubscription, Long idUser) {
         var projection = subscriptionRepository.findOneSubscriptionFlatten(idSubscription)
                 .orElseThrow(() -> new IllegalArgumentException("Inscrição não encontrada"));
 
@@ -41,7 +42,7 @@ public class FeedbackService {
         }
 
         if (!projection.getUsuarioId().equals(idUser)) {
-            throw new AccessDeniedException("Você não está matriculado nessa atividade");
+            throw new UserUnauthorizedException ("Você não está matriculado nessa atividade");
         }
 
         if (!projection.getStatus().equals(StatusInscricaoEnum.CONCLUIDA_PARTICIPACAO)) {
@@ -57,13 +58,13 @@ public class FeedbackService {
     }
 
     @Transactional
-    public void update(InsertFeedbackRequest update, Long idFeedback, Long idUser) throws AccessDeniedException {
+    public void update(InsertFeedbackRequest update, Long idFeedback, Long idUser) {
         var feed = feedbackRepository.getReferenceById(idFeedback);
         var projection = subscriptionRepository.findOneSubscriptionFlatten(feed.getInscricao().getId())
                 .orElseThrow(() -> new IllegalArgumentException("Inscrição não encontrada"));
 
         if (!projection.getUsuarioId().equals(idUser)) {
-            throw new AccessDeniedException("Você não está matriculado nessa atividade");
+            throw new UserUnauthorizedException("Você não está matriculado nessa atividade");
         }
 
         if (update.nota() > 5 || update.nota() < 0) {
@@ -72,6 +73,19 @@ public class FeedbackService {
 
         var feedEntity = feedbackMapper.toFeedbackEntity(update, feed);
         feedbackRepository.save(feedEntity);
+    }
+
+    @Transactional
+    public void delete(Long idFeedback, Long idUser) {
+        var feed = feedbackRepository.getReferenceById(idFeedback);
+        var projection = subscriptionRepository.findOneSubscriptionFlatten(feed.getInscricao().getId())
+                .orElseThrow(() -> new IllegalArgumentException("Inscrição não encontrada"));
+
+        if (!projection.getUsuarioId().equals(idUser)) {
+            throw new UserUnauthorizedException("Você não está matriculado nessa atividade");
+        }
+
+        feedbackRepository.delete(feed);
     }
 
     public FeedbackEntity toFeedbackEntity(InsertFeedbackRequest insertFeedbackRequest, InscricaoEntity subscriptionReference) {

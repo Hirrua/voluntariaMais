@@ -75,4 +75,10 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         RestErrorMessage exceptionResponse = new RestErrorMessage(HttpStatus.NOT_ACCEPTABLE, exception.getMessage());
         return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body(exceptionResponse);
     }
+
+    @ExceptionHandler(UserUnauthorizedException.class)
+    private ResponseEntity<RestErrorMessage> userUnauthorizedHandler(UserUnauthorizedException exception) {
+        RestErrorMessage exceptionResponse = new RestErrorMessage(HttpStatus.UNAUTHORIZED, exception.getMessage());
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exceptionResponse);
+    }
 }
