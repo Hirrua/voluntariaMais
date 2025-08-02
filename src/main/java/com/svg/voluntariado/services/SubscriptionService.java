@@ -107,14 +107,14 @@ public class SubscriptionService {
             throw new SubscriptionConfirmedException("Esta inscrição já foi confirmada.");
         }
 
-        subscription.setStatus(StatusInscricaoEnum.CONFIRMADA);
-        subscription.setTokenConfirmacao(null);
-        subscription.setDataExpiracaoToken(null);
-
         var activity = subscription.getAtividade();
         if (activity.getVagasPreenchidasAtividade() >= activity.getVagasTotais()) {
             throw new FilledSubscriptionException("Desculpe, as vagas para esta atividade acabaram de se esgotar.");
         }
+
+        subscription.setStatus(StatusInscricaoEnum.CONFIRMADA);
+        subscription.setTokenConfirmacao(null);
+        subscription.setDataExpiracaoToken(null);
 
         activity.setVagasPreenchidasAtividade(activity.getVagasPreenchidasAtividade() + 1);
         activityRepository.save(activity);
