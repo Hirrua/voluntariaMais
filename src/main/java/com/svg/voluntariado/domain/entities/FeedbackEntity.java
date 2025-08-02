@@ -33,4 +33,11 @@ public class FeedbackEntity {
     @OneToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "id_inscricao", nullable = false, unique = true)
     private InscricaoEntity inscricao;
+
+    public FeedbackEntity(Integer nota, String comentario, InscricaoEntity inscricao) {
+        this.nota = nota;
+        this.comentario = comentario;
+        this.dataFeedback = OffsetDateTime.now();
+        this.inscricao = inscricao;
+    }
 }

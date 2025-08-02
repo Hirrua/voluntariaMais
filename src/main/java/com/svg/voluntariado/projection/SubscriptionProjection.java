@@ -9,6 +9,7 @@ public interface SubscriptionProjection {
     Long getIdInscricao();
     Instant getDataInscricao();
     StatusInscricaoEnum getStatus();
+    Long getUsuarioId();
     String getUsuarioNome();
     String getUsuarioEmail();
 }
