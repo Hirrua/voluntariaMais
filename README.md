@@ -4,7 +4,7 @@
 voluntários e projetos de organizações não governamentais (ONGs). 
 Com um sistema intuitivo e acessível, a plataforma permite que ONGs 
 cadastrem os seus projetos, gerenciem atividades e encontrem voluntários 
-ideais para cada iniciativa.*
+ideais para cada iniciativa e objetivo.*
 
 ## Status do projeto
 - [x] Back-end - (01/08/2025)
