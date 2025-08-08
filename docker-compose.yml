@@ -4,9 +4,9 @@ services:
   postgres_ong:
     image: postgres:15-alpine
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: root
-      POSTGRES_DB: ongdb
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     restart: always
     ports:
       - "5433:5432"
@@ -23,8 +23,8 @@ services:
   pgadmin_ong:
     image: dpage/pgadmin4:9.3
     environment:
-      PGADMIN_DEFAULT_EMAIL: admin@admin.com
-      PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
     restart: always
     ports:
       - "15432:80"
@@ -33,6 +33,20 @@ services:
     depends_on:
       postgres_ong:
         condition: service_healthy
+    networks:
+      - ong_network
+
+  app:
+    build: .
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres_ong:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL}
+      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
     networks:
       - ong_network
 

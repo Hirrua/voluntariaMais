@@ -1,5 +1,0 @@
-ALTER TABLE tb_usuarios ADD COLUMN cep_usuario VARCHAR(8) NOT NULL;
-
-ALTER TABLE tb_ong ADD COLUMN cep_ong VARCHAR(8) NOT NULL;
-
-ALTER TABLE tb_projeto ADD COLUMN cep_projeto VARCHAR(8) NOT NULL;

@@ -1,0 +1,33 @@
+# Maven / Gradle build directories
+target
+build
+out
+
+# IDE files
+.idea
+*.iml
+*.ipr
+*.iws
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Environment configs (don’t copy secrets)
+.env
+*.env
+
+# Git
+.git
+.gitignore
+
+# Docker config itself
+.dockerignore
+Dockerfile*
+
+# Temporary files
+*.swp
+*.tmp
