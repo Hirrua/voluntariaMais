@@ -2,6 +2,8 @@ package com.svg.voluntariado.controller;
 
 import com.svg.voluntariado.domain.dto.feedback.InsertFeedbackRequest;
 import com.svg.voluntariado.services.FeedbackService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -12,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.net.URI;
 import java.nio.file.AccessDeniedException;
 
+@Tag(name = "Feedback", description = "Endpoint para o voluntario realizar um feedback após participar de uma atividade")
 @RestController
 @RequestMapping("/api/feedback")
 public class FeedbackController {
@@ -23,6 +26,7 @@ public class FeedbackController {
         this.feedbackService = feedbackService;
     }
 
+    @Operation(summary = "Escrever um feedback")
     @PostMapping("/{idSubscription}")
     @PreAuthorize("hasRole('VOLUNTARIO')")
     public ResponseEntity<?> writeFeedback(@RequestBody InsertFeedbackRequest insertFeedbackRequest,
@@ -33,6 +37,7 @@ public class FeedbackController {
         return ResponseEntity.created(URI.create("/api/feedback/" + feedbackResponse.id())).body("Comentário adicionado com sucesso.");
     }
 
+    @Operation(summary = "Atualizar um feedback")
     @PutMapping("/{idFeedback}")
     @PreAuthorize("hasRole('VOLUNTARIO')")
     public ResponseEntity<?> updateFeedback(@RequestBody InsertFeedbackRequest updateFeedbackRequest,
@@ -43,6 +48,7 @@ public class FeedbackController {
         return ResponseEntity.ok().body("Comentário atualizado.");
     }
 
+    @Operation(summary = "Deletar um feedback")
     @DeleteMapping("/{idFeedback}")
     @PreAuthorize("hasAnyRole('VOLUNTARIO', 'ADMIN_ONG', 'ADMIN_PLATAFORMA')")
     public ResponseEntity<?> deleteFeedback(@PathVariable(value = "idFeedback") Long idFeedback,
@@ -51,6 +57,4 @@ public class FeedbackController {
         feedbackService.delete(idFeedback, idUser);
         return ResponseEntity.ok().body("Comentário deletado.");
     }
-
-
 }
