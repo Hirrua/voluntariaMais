@@ -4,6 +4,7 @@ import com.svg.voluntariado.domain.dto.user.LoginRequest;
 import com.svg.voluntariado.domain.dto.user.LoginResponse;
 import com.svg.voluntariado.domain.dto.user.UserRegisterRequest;
 import com.svg.voluntariado.services.AuthenticationService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+@Tag(name = "Atividades", description = "Endpoints para realizar o registro e login")
 @RestController
 @RequestMapping("/api/auth")
 public class AuthenticationController {
