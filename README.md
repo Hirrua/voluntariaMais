@@ -15,7 +15,12 @@ ideais para cada iniciativa e objetivo.*
 
 ## Como rodar o projeto
 1. É necessário gerar duas chaves: ``app.key`` e ``app.pub`` que devem ficar armazenadas em `src/main/resource`. Utilize
-o seguinte link para gerar suas chave: [acesse aqui](https://cryptotools.net/rsagen).
+OpenSSL para gerar.
+```shell
+  openssl genrsa -out app.key 2048
+
+  openssl rsa -in app.key -pubout -out app.pub
+```
 2. Crie uma cópia do arquivo `.env-example` e forneça as credenciais necessárias, você pode utilizar o provedor de e-mail
 que achar melhor.
 3. Suba o `docker-compose.yml` que contém a *aplicação*, *postgresql* e o *pgadmin*, com o seguinte comando: 
