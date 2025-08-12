@@ -13,6 +13,16 @@ ideais para cada iniciativa e objetivo.*
 
 > O projeto está em constante evolução com novas funcionalidades e tecnologias, acompanhe o desenvolvimento!
 
+## Como rodar o projeto
+1. É necessário gerar duas chaves: ``app.key`` e ``app.pub`` que devem ficar armazenadas em `src/main/resource`. Utilize
+o seguinte link para gerar suas chave: [acesse aqui](https://cryptotools.net/rsagen).
+2. Crie uma cópia do arquivo `.env-example` e forneça as credenciais necessárias, você pode utilizar o provedor de e-mail
+que achar melhor.
+3. Suba o `docker-compose.yml` que contém a *aplicação*, *postgresql* e o *pgadmin*, com o seguinte comando: 
+```shell
+  docker-compose up -d
+```
+
 ## Módulos do sistema
 
 ### 1. **Registro e login de usuários**
