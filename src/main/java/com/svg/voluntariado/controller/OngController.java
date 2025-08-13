@@ -29,9 +29,10 @@ public class OngController {
 
     @Operation(summary = "Criar uma ONG")
     @PostMapping
-    @PreAuthorize("T(java.lang.Long).parseLong(principal.subject) == #createOngRequest.idUsuarioResponsavel() or hasRole('ADMIN_PLATAFORMA')")
-    public ResponseEntity<?> createOng(@RequestBody @Valid CreateOngRequest createOngRequest) {
-        var ongId = ongService.create(createOngRequest);
+    @PreAuthorize("hasRole('ADMIN_PLATAFORMA')")
+    public ResponseEntity<?> createOng(@RequestBody @Valid CreateOngRequest createOngRequest, @AuthenticationPrincipal Jwt principal) {
+        var adminId = Long.parseLong(principal.getSubject());
+        var ongId = ongService.create(createOngRequest, adminId);
         return ResponseEntity.created(URI.create("/api/ong/" + ongId)).body("Ong criado com sucesso.");
     }
 
