@@ -4,12 +4,14 @@ import com.svg.voluntariado.domain.dto.ong.*;
 import com.svg.voluntariado.domain.entities.OngEntity;
 import com.svg.voluntariado.domain.entities.UsuarioEntity;
 import com.svg.voluntariado.exceptions.ProjectNotFoundException;
+import com.svg.voluntariado.exceptions.UserUnauthorizedException;
 import com.svg.voluntariado.mapper.OngMapper;
 import com.svg.voluntariado.exceptions.OngNotFoundException;
 import com.svg.voluntariado.repositories.OngRepository;
 import com.svg.voluntariado.repositories.UserRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,7 +32,11 @@ public class OngService {
     }
 
     @Transactional
-    public Long create(CreateOngRequest createOngRequest) {
+    public Long create(CreateOngRequest createOngRequest, Long adminId) {
+        if (!createOngRequest.idUsuarioResponsavel().equals(adminId)) {
+            throw new UserUnauthorizedException();
+        }
+
         UsuarioEntity responsibleUser = userRepository.findById(createOngRequest.idUsuarioResponsavel())
                 .orElseThrow(() -> new RuntimeException("Usuário responsável não encontrado com ID: " + createOngRequest.idUsuarioResponsavel())
         );

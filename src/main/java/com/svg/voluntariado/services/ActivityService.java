@@ -4,6 +4,7 @@ import com.svg.voluntariado.domain.dto.activity.*;
 import com.svg.voluntariado.domain.dto.ong.OngContextResponse;
 import com.svg.voluntariado.domain.dto.project.ProjectContextResponse;
 import com.svg.voluntariado.domain.entities.AtividadeEntity;
+import com.svg.voluntariado.exceptions.InvalidDateException;
 import com.svg.voluntariado.mapper.ActivityMapper;
 import com.svg.voluntariado.mapper.OngMapper;
 import com.svg.voluntariado.mapper.ProjectMapper;
@@ -18,7 +19,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.nio.file.AccessDeniedException;
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.util.List;
 
 @Service
@@ -44,17 +47,29 @@ public class ActivityService {
 
     @Transactional
     public Long create(CreateActivityRequest createActivityRequest, Long idAdmin) throws AccessDeniedException {
+        OffsetDateTime dataInicio = createActivityRequest.dataHoraInicioAtividade();
+        OffsetDateTime dataFim = createActivityRequest.dataHoraFimAtividade();
+
+        LocalDate hoje = LocalDate.now(ZoneId.of("America/Sao_Paulo"));
+        LocalDate dataInicioLocalDate = dataInicio.toLocalDate();
+
+        if (dataInicioLocalDate.isBefore(hoje) || dataInicioLocalDate.isEqual(hoje)) {
+            throw new InvalidDateException("A data de início da atividade deve ser a partir de amanhã.");
+        }
+
+        if (dataFim.isBefore(dataInicio)) {
+            throw new InvalidDateException("A data de término não pode ser anterior à data de início.");
+        }
+
         var project = projectRepository.findById(createActivityRequest.idProjeto());
         if (project.isEmpty()) {
             throw  new ProjectNotFoundException();
         }
 
-        var ong = ongRepository.findById(project.get().getOng().getId()).orElseThrow(OngNotFoundException::new);
+        var ong = project.get().getOng();
         if (!ong.getUsuarioResponsavel().getId().equals(idAdmin)) {
             throw new AccessDeniedException("Somente o admin da ong pode criar atividades.");
         }
-
-        // TODO validar as datas
 
         var activity = activityMapper.toAtividadeEntity(createActivityRequest);
         activity.setProjeto(project.get());

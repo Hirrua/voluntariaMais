@@ -81,4 +81,10 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         RestErrorMessage exceptionResponse = new RestErrorMessage(HttpStatus.UNAUTHORIZED, exception.getMessage());
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exceptionResponse);
     }
+
+    @ExceptionHandler(InvalidDateException.class)
+    private ResponseEntity<RestErrorMessage> invalidDataHandler(InvalidDateException exception) {
+        RestErrorMessage exceptionResponse = new RestErrorMessage(HttpStatus.NOT_ACCEPTABLE, exception.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body(exceptionResponse);
+    }
 }
