@@ -51,4 +51,13 @@ public class SubscriptionController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
+    @Operation(summary = "Voluntário cancelar inscrição")
+    @DeleteMapping("/revoke/{idSubscription}")
+    @PreAuthorize("hasRole('VOLUNTARIO')")
+    public ResponseEntity<?> subscriptionRevoke(@PathVariable(value = "idSubscription") Long idSubscription, @AuthenticationPrincipal Jwt principal) {
+        var user = Long.parseLong(principal.getSubject());
+        subscriptionService.subscriptionRevoke(idSubscription, user);
+        return ResponseEntity.ok("Inscrição confirmada com sucesso!");
+    }
 }
