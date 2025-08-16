@@ -136,7 +136,16 @@ public class SubscriptionService {
         }
 
         switch (subEntity.getStatus()) {
-            case CONFIRMADA, PENDENTE:
+
+            case CONFIRMADA:
+                subEntity.setStatus(StatusInscricaoEnum.CANCELADA_PELO_VOLUNTARIO);
+                var activity = subEntity.getAtividade();
+                activity.setVagasPreenchidasAtividade(activity.getVagasPreenchidasAtividade() - 1);
+                activity.setVagasTotais(activity.getVagasTotais() + 1);
+                subscriptionRepository.save(subEntity);
+                break;
+
+            case PENDENTE:
                 subEntity.setStatus(StatusInscricaoEnum.CANCELADA_PELO_VOLUNTARIO);
                 subscriptionRepository.save(subEntity);
                 break;
