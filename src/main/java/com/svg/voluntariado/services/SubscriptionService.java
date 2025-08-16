@@ -103,8 +103,12 @@ public class SubscriptionService {
             throw new ExpiredTokenException("Token de confirmação expirado.");
         }
 
-        if (subscription.getStatus() == StatusInscricaoEnum.CONFIRMADA) {
+        if (StatusInscricaoEnum.CONFIRMADA.equals(subscription.getStatus())) {
             throw new SubscriptionConfirmedException("Esta inscrição já foi confirmada.");
+        }
+
+        if (StatusInscricaoEnum.CONCLUIDA_PARTICIPACAO.equals(subscription.getStatus())) {
+            throw new SubscriptionConfirmedException("Você já concluiu essa atividade.");
         }
 
         var activity = subscription.getAtividade();
@@ -120,5 +124,34 @@ public class SubscriptionService {
         activityRepository.save(activity);
 
         subscriptionRepository.save(subscription);
+    }
+
+    @Transactional
+    public void subscriptionRevoke(Long idSubscription, Long idUser) {
+        var subEntity = subscriptionRepository.findById(idSubscription)
+                .orElseThrow(SubscriptionNotFoundException::new);
+
+        if (!subEntity.getUsuario().getId().equals(idUser)) {
+            throw new UserUnauthorizedException();
+        }
+
+        switch (subEntity.getStatus()) {
+            case CONFIRMADA, PENDENTE:
+                subEntity.setStatus(StatusInscricaoEnum.CANCELADA_PELO_VOLUNTARIO);
+                subscriptionRepository.save(subEntity);
+                break;
+
+            case CONCLUIDA_PARTICIPACAO:
+                throw new SubscriptionConfirmedException("Você já concluiu essa atividade e não pode cancelar a inscrição.");
+
+            case CANCELADA_PELO_VOLUNTARIO:
+                throw new SubscriptionConfirmedException("Inscrição já foi cancelada");
+
+            case RECUSADA_PELA_ONG:
+                throw new IllegalStateException("Esta inscrição já se encontra em um estado cancelado ou recusado.");
+
+            default:
+                throw new IllegalStateException("O status atual da inscrição não permite o cancelamento.");
+        }
     }
 }
