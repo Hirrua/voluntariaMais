@@ -136,6 +136,7 @@ public class SubscriptionService {
         }
 
         switch (subEntity.getStatus()) {
+
             case CONFIRMADA:
                 subEntity.setStatus(StatusInscricaoEnum.CANCELADA_PELO_VOLUNTARIO);
                 var activity = subEntity.getAtividade();
