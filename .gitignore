@@ -1,11 +1,11 @@
 HELP.md
 .env
-target/
-!.mvn/wrapper/maven-wrapper.jar
-!**/src/main/**/target/
-!**/src/test/**/target/
-src/main/resources/app.key
-src/main/resources/app.pub
+backend/target/
+backend/!.mvn/wrapper/maven-wrapper.jar
+backend/!**/src/main/**/target/
+backend/!**/src/test/**/target/
+backend/src/main/resources/app.key
+backend/src/main/resources/app.pub
 
 ### STS ###
 .apt_generated
