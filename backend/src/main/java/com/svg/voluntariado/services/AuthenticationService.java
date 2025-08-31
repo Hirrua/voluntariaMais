@@ -8,6 +8,7 @@ import com.svg.voluntariado.mapper.UserMapper;
 import com.svg.voluntariado.repositories.RoleRepository;
 import com.svg.voluntariado.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -30,7 +31,7 @@ public class AuthenticationService {
         this.userMapper = userMapper;
     }
 
-    public LoginResponse login(LoginRequest loginRequest) {
+    public ResponseCookie login(LoginRequest loginRequest) {
         var user = userRepository.findByEmail(loginRequest.email());
 
         if (user.isEmpty() || !isLoginCorrect(loginRequest.senha(), user.get().getPassword(), bCryptPasswordEncoder)) {
@@ -38,7 +39,16 @@ public class AuthenticationService {
         }
 
         var userToken = tokenService.generateToken(user.get());
-        return new LoginResponse(userToken, TokenService.EXPIRY);
+
+        ResponseCookie cookie = ResponseCookie.from("jwt", userToken)
+                .httpOnly(true)
+                .secure(false) // TODO alterar para TRUE em produção
+                .path("/")
+                .maxAge(TokenService.EXPIRY)
+                .sameSite("Strict")
+                .build();
+
+        return cookie;
     }
 
     public void register(UserRegisterRequest registerRequest) {

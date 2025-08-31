@@ -9,7 +9,6 @@ import { Label } from "@/components/ui/label"
 export default function LoginPage() {
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
-    const [showPassword, setShowPassword] = useState(false)
 
     return (
         <div className="min-h-screen bg-white flex items-center justify-center">
@@ -29,6 +28,8 @@ export default function LoginPage() {
                                     <Input
                                         id="email"
                                         type="email"
+                                        value={email}
+                                        onChange={(ev) => setEmail(ev.target.value)}
                                         placeholder="m@example.com"
                                         required
                                     />
@@ -37,7 +38,12 @@ export default function LoginPage() {
                                     <div className="flex items-center">
                                         <Label htmlFor="password">Password</Label>
                                     </div>
-                                    <Input id="password" type="password" required />
+                                    <Input 
+                                        id="password" 
+                                        type="password" 
+                                        value={password} 
+                                        onChange={(ev) => setPassword(ev.target.value)}
+                                        required />
                                 </div>
                                 <div className="flex flex-col gap-3">
                                     <Button type="submit" className="w-full bg-[#8F89FB] hover:bg-[#2A2599]">
@@ -47,7 +53,7 @@ export default function LoginPage() {
                             </div>
                             <div className="mt-4 text-center text-sm">
                                 Você não possui uma conta?{" "}
-                                <a href="#" className="underline underline-offset-4">
+                                <a href="/singup" className="underline underline-offset-4">
                                     Cadastre-se
                                 </a>
                             </div>
@@ -55,7 +61,6 @@ export default function LoginPage() {
                     </CardContent>
                 </Card>
             </div>
-
         </div>
     )
 }

@@ -4,9 +4,11 @@ import com.svg.voluntariado.domain.dto.user.LoginRequest;
 import com.svg.voluntariado.domain.dto.user.LoginResponse;
 import com.svg.voluntariado.domain.dto.user.UserRegisterRequest;
 import com.svg.voluntariado.services.AuthenticationService;
+import com.svg.voluntariado.services.TokenService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -19,16 +21,21 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthenticationController {
 
     private final AuthenticationService authenticationService;
+    private final TokenService tokenService;
 
     @Autowired
-    public AuthenticationController(AuthenticationService authenticationService) {
+    public AuthenticationController(AuthenticationService authenticationService, TokenService tokenService) {
         this.authenticationService = authenticationService;
+        this.tokenService = tokenService;
     }
 
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@RequestBody @Valid LoginRequest loginRequest) {
-        var response = authenticationService.login(loginRequest);
-        return ResponseEntity.ok().body(response);
+        var cookie = authenticationService.login(loginRequest);
+
+        LoginResponse body = new LoginResponse("Login realizado com sucesso!", TokenService.EXPIRY);
+
+        return ResponseEntity.ok().header(cookie.toString()).body(body);
     }
 
     @PostMapping("/register")

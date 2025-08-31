@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 public class TokenService {
 
     private final JwtEncoder jwtEncoder;
-    public static final Long EXPIRY = 18000L;
+    public static final Long EXPIRY = 900L;
 
     @Autowired
     public TokenService(JwtEncoder jwtEncoder) {
