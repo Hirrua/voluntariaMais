@@ -2,22 +2,22 @@
 <html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Confirmação de Inscrição</title>
+    <title>Confirmação de Registro</title>
 </head>
 <body style="font-family: sans-serif;">
 <h2>Olá, <span th:text="${userName}"></span>!</h2>
 <p>
-    Obrigado por se inscrever na atividade: <b th:text="${activityName}"></b>.
+    Obrigado por se registrar na plataforma! Ficamos muito felizes com o seu intuito e curiosidade.
 </p>
 <p>
-    Para confirmar a sua participação, por favor, clique no botão abaixo. Este link expirará em 24 horas.
+    Para confirmar o registro, por favor, clique no botão abaixo. Este link expirará em 24 horas.
 </p>
 <a th:href="${confirmationUrl}"
    style="background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">
-    Confirmar Inscrição
+    Confirmar
 </a>
 <p>
-    Se você não se inscreveu, por favor, ignore este e-mail.
+    Se você não solicitou este registro, por favor, ignore este e-mail.
 </p>
 <p>
     Atenciosamente,<br>

@@ -11,6 +11,7 @@ public interface UserRepository extends JpaRepository<UsuarioEntity, Long> {
 
     Optional<UsuarioEntity> findByEmail(String email);
     Optional<UsuarioEntity> findByCpf(String cpf);
+    Optional<UsuarioEntity> findByTokenConfirmacao(String tokenConfirmacao);
 
     @Query("SELECT u FROM UsuarioEntity u JOIN FETCH u.perfilVoluntario pv WHERE u.id = :id")
     Optional<UsuarioEntity> findByIdIfProfileExists(@Param("id") Long id);

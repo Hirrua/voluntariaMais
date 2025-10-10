@@ -1,5 +1,6 @@
 package com.svg.voluntariado.domain.entities;
 
+import com.svg.voluntariado.domain.enums.StatusUsuarioEnum;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import lombok.*;
@@ -12,6 +13,7 @@ import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Getter
@@ -55,7 +57,17 @@ public class UsuarioEntity implements UserDetails {
     })
     private EnderecoEntity endereco;
 
-    private boolean ativo = true;
+    private boolean ativo = false;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status_usuario", nullable = false)
+    private StatusUsuarioEnum statusUsuario = StatusUsuarioEnum.PENDENTE_CONFIRMACAO;
+
+    @Column(name = "token_confirmacao")
+    private String tokenConfirmacao;
+
+    @Column(name = "data_expiracao_token", columnDefinition = "TIMESTAMP WITH TIME ZONE")
+    private OffsetDateTime dataExpiracaoToken;
 
     @CreationTimestamp
     @Column(name = "data_cadastro", nullable = false, updatable = false, columnDefinition = "TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP")
@@ -102,6 +114,20 @@ public class UsuarioEntity implements UserDetails {
         this.dataCadastro = dataCadastro;
     }
 
+    public void prepareForConfirmation() {
+        this.tokenConfirmacao = UUID.randomUUID().toString();
+        this.dataExpiracaoToken = OffsetDateTime.now().plusHours(24);
+        this.statusUsuario = StatusUsuarioEnum.PENDENTE_CONFIRMACAO;
+        this.ativo = false;
+    }
+
+    public void confirmRegistration() {
+        this.statusUsuario = StatusUsuarioEnum.CONFIRMADO;
+        this.tokenConfirmacao = null;
+        this.dataExpiracaoToken = null;
+        this.ativo = true;
+    }
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return roles.stream()
@@ -136,6 +162,6 @@ public class UsuarioEntity implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return this.ativo;
+        return this.ativo && StatusUsuarioEnum.CONFIRMADO.equals(this.statusUsuario);
     }
 }
