@@ -3,6 +3,9 @@ package com.svg.voluntariado.controller;
 import com.svg.voluntariado.domain.dto.profile.CreateProfileRequest;
 import com.svg.voluntariado.domain.dto.profile.InfoProfileResponse;
 import com.svg.voluntariado.domain.dto.profile.UpdateInfoProfileRequest;
+import com.svg.voluntariado.domain.dto.user.UserInfoDTO;
+import com.svg.voluntariado.exceptions.UserNotFoundException;
+import com.svg.voluntariado.repositories.UserRepository;
 import com.svg.voluntariado.services.VolunteerProfileService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -22,10 +25,12 @@ import java.net.URI;
 public class VolunteerProfileController {
 
     private final VolunteerProfileService volunteerProfileService;
+    private final UserRepository userRepository;
 
     @Autowired
-    public VolunteerProfileController(VolunteerProfileService volunteerProfileService) {
+    public VolunteerProfileController(VolunteerProfileService volunteerProfileService, UserRepository userRepository) {
         this.volunteerProfileService = volunteerProfileService;
+        this.userRepository = userRepository;
     }
 
     @Operation(summary = "Criar um perfil")
@@ -58,4 +63,12 @@ public class VolunteerProfileController {
         volunteerProfileService.delete(id);
         return ResponseEntity.ok().build();
     }
+
+    @GetMapping("/users/me")
+    public ResponseEntity<UserInfoDTO> getCurrentUser(@AuthenticationPrincipal Jwt authentication) {
+        var currentUser = userRepository.findByIdIfProfileExists(Long.parseLong(authentication.getSubject())).orElseThrow(UserNotFoundException::new);
+        UserInfoDTO userInfo = new UserInfoDTO(currentUser.getId(), currentUser.getNome(), currentUser.getEmail());
+        return ResponseEntity.ok(userInfo);
+    }
+
 }
