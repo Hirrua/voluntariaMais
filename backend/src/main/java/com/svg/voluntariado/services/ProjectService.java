@@ -1,5 +1,6 @@
 package com.svg.voluntariado.services;
 
+import com.svg.voluntariado.domain.dto.PageResponse;
 import com.svg.voluntariado.domain.dto.project.CreateProjectRequest;
 import com.svg.voluntariado.domain.dto.project.SimpleInfoProjectResponse;
 import com.svg.voluntariado.domain.dto.project.UpdateProjectRequest;
@@ -16,7 +17,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.OffsetDateTime;
-import java.util.List;
 
 @Service
 public class ProjectService {
@@ -47,12 +47,15 @@ public class ProjectService {
     }
 
     @Transactional(readOnly = true)
-    public List<SimpleInfoProjectResponse> getAll(int page, int itens) {
+    public PageResponse<SimpleInfoProjectResponse> getAll(int page, int itens) {
         var projetos = projectRepository.findAll(PageRequest.of(page, itens));
+
         if (projetos.isEmpty()) {
-            throw new ProjectNotFoundException("Nenhum projeto foi criada até o momento.");
+            return PageResponse.empty(page, itens);
         }
-        return projectMapper.toSimpleInfoProjetoResponse(projetos);
+
+        var projetosDto = projectMapper.toSimpleInfoProjetoResponse(projetos);
+        return PageResponse.from(projetos, projetosDto);
     }
 
     // TODO método para buscar projeto e as atividade

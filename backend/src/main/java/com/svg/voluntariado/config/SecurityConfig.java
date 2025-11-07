@@ -63,6 +63,10 @@ public class SecurityConfig {
             "/info/about/{idOng}"
     };
 
+    private static final String[] PROJECT_WHITELIST = {
+            "/api/projetos/infos",
+    };
+
     public SecurityConfig(JwtCookieFilter jwtCookieFilter, JwtDecoder jwtDecoder,
                           JwtAuthenticationConverter jwtAuthenticationConverter) {
         this.jwtCookieFilter = jwtCookieFilter;
@@ -79,6 +83,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(SWAGGER_WHITELIST).permitAll()
                         .requestMatchers(ONG_WHITELIST).permitAll()
+                        .requestMatchers(PROJECT_WHITELIST).permitAll()
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/inscricao/confirmar").permitAll() //TODO Rever
                         .anyRequest().authenticated())
@@ -95,9 +100,9 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        configuration.setAllowedOrigins(List.of("*"));
+        configuration.setAllowedOrigins(List.of("http://localhost:3000"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(List.of("*"));
+        configuration.setAllowedHeaders(List.of("http://localhost:3000"));
         configuration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

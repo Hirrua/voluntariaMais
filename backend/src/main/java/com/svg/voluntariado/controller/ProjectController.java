@@ -1,6 +1,8 @@
 package com.svg.voluntariado.controller;
 
+import com.svg.voluntariado.domain.dto.PageResponse;
 import com.svg.voluntariado.domain.dto.project.CreateProjectRequest;
+import com.svg.voluntariado.domain.dto.project.SimpleInfoProjectResponse;
 import com.svg.voluntariado.domain.dto.project.UpdateProjectRequest;
 import com.svg.voluntariado.services.ProjectService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -35,9 +37,9 @@ public class ProjectController {
 
     @Operation(summary = "Visualizar todos os projetos")
     @GetMapping("/infos")
-    public ResponseEntity<?> getAllProjects(@RequestParam int page, @RequestParam int itens) {
+    public ResponseEntity<PageResponse<SimpleInfoProjectResponse>> getAllProjects(@RequestParam int page, @RequestParam int itens) {
         var projetos = projectService.getAll(page, itens);
-        return ResponseEntity.ok().body(projetos);
+        return ResponseEntity.ok(projetos);
     }
 
     @Operation(summary = "Atualizar um projeto")
