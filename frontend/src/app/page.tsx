@@ -1,51 +1,41 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import ProjectCard from "@/components/ProjectCard";
 import Footer from "@/components/Footer";
-
-// Dados mockados dos projetos
-const mockProjects = [
-  {
-    id: 1,
-    title: "Alfabetização para Crianças",
-    description: "Projeto de ensino de leitura e escrita para crianças em comunidades carentes. Buscamos voluntários com experiência em educação.",
-  },
-  {
-    id: 2,
-    title: "Apoio a Idosos",
-    description: "Programa de companhia e assistência para idosos em casas de repouso. Atividades incluem conversas, jogos e passeios.",
-  },
-  {
-    id: 3,
-    title: "Preservação Ambiental",
-    description: "Ações de limpeza e preservação de áreas verdes urbanas. Junte-se a nós para tornar nossa cidade mais sustentável.",
-  },
-  {
-    id: 4,
-    title: "Distribuição de Alimentos",
-    description: "Organização e distribuição de cestas básicas para famílias em situação de vulnerabilidade social.",
-  },
-  {
-    id: 5,
-    title: "Aulas de Tecnologia",
-    description: "Ensino de informática básica e programação para jovens da periferia. Compartilhe seu conhecimento em tech!",
-  },
-  {
-    id: 6,
-    title: "Proteção Animal",
-    description: "Cuidado e resgate de animais abandonados. Procuramos voluntários para ajudar no abrigo e em campanhas de adoção.",
-  },
-];
+import { OngDTO } from "@/types/ong";
+import { ongService } from "@/services/ongService";
+import { projectService } from "@/services/projectService";
+import { ProjectDTO } from "@/types/project";
 
 export default function Home() {
   const [searchTerm, setSearchTerm] = useState("");
+  const [projects, setProjects] = useState<ProjectDTO[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const filteredProjects = mockProjects.filter(
-    (project) =>
-      project.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      project.description.toLowerCase().includes(searchTerm.toLowerCase())
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const data = await projectService.getProjects({ page: 1, itens: 6 });
+        setProjects(data.content);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Erro ao buscar Porjetos");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProjects();
+  }, []);
+
+  const filteredProjects = projects.filter(
+    (projects) =>
+      projects.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      projects.publicoAlvo.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -65,22 +55,40 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredProjects.map((project) => (
-            <ProjectCard
-              key={project.id}
-              title={project.title}
-              description={project.description}
-            />
-          ))}
-        </div>
-
-        {filteredProjects.length === 0 && (
+        {loading && (
           <div className="text-center py-12">
-            <p className="text-gray-500 text-lg">
-              Nenhum projeto encontrado para "{searchTerm}"
-            </p>
+            <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#8F89FB]"></div>
+            <p className="text-gray-500 mt-4">Carregando projetos</p>
           </div>
+        )}
+
+        {error && (
+          <div className="text-center py-12">
+            <p className="text-red-500 text-lg">{error}</p>
+          </div>
+        )}
+
+        {!loading && !error && (
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredProjects.map((ong, index) => (
+                <ProjectCard
+                  key={index}
+                  title={ong.nome}
+                  publicoAlvo={ong.publicoAlvo}
+                  objetivo={ong.objetivo}
+                />
+              ))}
+            </div>
+
+            {filteredProjects.length === 0 && (
+              <div className="text-center py-12">
+                <p className="text-gray-500 text-lg">
+                  Nenhum projeto encontrado
+                </p>
+              </div>
+            )}
+          </>
         )}
       </main>
 
