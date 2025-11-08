@@ -16,6 +16,10 @@ public interface ProfileMapper {
     @Mapping(target = "usuario", ignore = true)
     PerfilVoluntarioEntity toPerfilVoluntarioEntity(CreateProfileRequest createProfileRequest);
 
+    @Mapping(source = "usuario.nome", target = "nome")
+    @Mapping(source = "usuario.sobrenome", target = "sobrenome")
+    @Mapping(source = "usuario.email", target = "email")
+    @Mapping(source = "usuario.endereco", target = "endereco")
     InfoProfileResponse toInfoPerfilResponse(PerfilVoluntarioEntity perfil);
 
     @Mapping(target = "id", ignore = true)

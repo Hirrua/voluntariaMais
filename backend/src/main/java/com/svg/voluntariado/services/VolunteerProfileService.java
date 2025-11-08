@@ -3,6 +3,7 @@ package com.svg.voluntariado.services;
 import com.svg.voluntariado.domain.dto.profile.CreateProfileRequest;
 import com.svg.voluntariado.domain.dto.profile.InfoProfileResponse;
 import com.svg.voluntariado.domain.dto.profile.UpdateInfoProfileRequest;
+import com.svg.voluntariado.domain.entities.PerfilVoluntarioEntity;
 import com.svg.voluntariado.domain.entities.UsuarioEntity;
 import com.svg.voluntariado.mapper.ProfileMapper;
 import com.svg.voluntariado.exceptions.ProfileNotFoundException;
@@ -54,8 +55,7 @@ public class VolunteerProfileService {
                 .orElseThrow(() -> new ProfileNotFoundException("Perfil não encontrado.")
         );
 
-
-        return profileMapper.toInfoPerfilResponse(perfil);
+        return toInfoProfileResponse(perfil);
     }
 
     @Transactional
@@ -66,7 +66,7 @@ public class VolunteerProfileService {
         );
 
         var infosMap = profileMapper.toPerfilVoluntarioEntity(updateInfo, perfil);
-        return profileMapper.toInfoPerfilResponse(infosMap);
+        return toInfoProfileResponse(infosMap);
     }
 
     @Transactional
@@ -77,5 +77,19 @@ public class VolunteerProfileService {
         );
 
         volunteerProfileRepository.delete(perfil);
+    }
+
+    public InfoProfileResponse toInfoProfileResponse(PerfilVoluntarioEntity entity) {
+        return new InfoProfileResponse(
+                entity.getId(),
+                entity.getUsuario().getNome(),
+                entity.getUsuario().getSobrenome(),
+                entity.getUsuario().getEmail(),
+                entity.getBio(),
+                entity.getDisponibilidade(),
+                entity.getDataNascimento(),
+                entity.getTelefoneContato(),
+                entity.getUsuario().getEndereco()
+        );
     }
 }

@@ -56,10 +56,10 @@ public class AuthenticationService {
 
         return ResponseCookie.from("access_volunteer", userToken)
                 .httpOnly(true)
-                .secure(false)
+                .secure(false) // Em produção, usar true com HTTPS
                 .path("/")
                 .maxAge(TokenService.EXPIRY)
-                .sameSite("None")
+                .sameSite("Lax") // Lax para desenvolvimento HTTP, None requer Secure=true
                 .build();
     }
 
