@@ -25,12 +25,38 @@ public class StorageService {
     }
 
     private String buildKey(StorageFolder folder, Long entityId, String fileName) {
-        return String.format("%s/%s/%d/%s",
-                BASE_PATH,
-                folder.getPath(),
-                entityId,
-                fileName
-        );
+        return buildPrefix(folder, entityId) + fileName;
+    }
+
+    private String buildPrefix(StorageFolder folder, Long entityId) {
+        String basePath = normalizeBasePath(BASE_PATH);
+        if (basePath.isEmpty()) {
+            return String.format("%s/%d/", folder.getPath(), entityId);
+        }
+
+        return String.format("%s/%s/%d/", basePath, folder.getPath(), entityId);
+    }
+
+    private String normalizeBasePath(String basePath) {
+        if (basePath == null) {
+            return "";
+        }
+
+        String trimmed = basePath.trim();
+        if (trimmed.isEmpty()) {
+            return "";
+        }
+
+        int start = 0;
+        int end = trimmed.length();
+        while (start < end && trimmed.charAt(start) == '/') {
+            start++;
+        }
+        while (end > start && trimmed.charAt(end - 1) == '/') {
+            end--;
+        }
+
+        return trimmed.substring(start, end);
     }
 
     public String upload(StorageFolder folder, Long entityId, String fileName,
@@ -50,7 +76,7 @@ public class StorageService {
     }
 
     public List<String> listFiles(StorageFolder folder, Long entityId) {
-        String prefix = String.format("%s/%s/%d/", BASE_PATH, folder.getPath(), entityId);
+        String prefix = buildPrefix(folder, entityId);
 
         ListObjectsV2Response response = s3Client.listObjectsV2(
                 ListObjectsV2Request.builder()

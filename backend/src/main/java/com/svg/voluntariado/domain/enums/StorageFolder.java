@@ -4,9 +4,9 @@ import lombok.Getter;
 
 @Getter
 public enum StorageFolder {
-    USUARIOS("usuarios"),
-    PROJETOS("projetos"),
-    ONGS("ongs");
+    VOLUNTARIO("voluntario"),
+    PROJETO("projeto"),
+    ONG("ong");
 
     private final String path;
 
