@@ -12,5 +12,6 @@ public record InfoProfileResponse(Long id,
                                   String disponibilidade,
                                   LocalDate dataNascimento,
                                   String telefoneContato,
+                                  String fotoPerfilUrl,
                                   EnderecoEntity endereco) {
 }

@@ -37,6 +37,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import jakarta.servlet.http.HttpServletRequest;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.util.List;
@@ -67,6 +68,11 @@ public class SecurityConfig {
             "/api/projetos/infos",
     };
 
+    private static final String[] AUTH_WHITELIST = {
+            "/api/auth/**",
+            "/auth/**"
+    };
+
     public SecurityConfig(JwtCookieFilter jwtCookieFilter, JwtDecoder jwtDecoder,
                           JwtAuthenticationConverter jwtAuthenticationConverter) {
         this.jwtCookieFilter = jwtCookieFilter;
@@ -84,16 +90,36 @@ public class SecurityConfig {
                         .requestMatchers(SWAGGER_WHITELIST).permitAll()
                         .requestMatchers(ONG_WHITELIST).permitAll()
                         .requestMatchers(PROJECT_WHITELIST).permitAll()
-                        .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers(AUTH_WHITELIST).permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/inscricao/confirmar").permitAll() //TODO Rever
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtCookieFilter, BearerTokenAuthenticationFilter.class)
                 .oauth2ResourceServer((oauth2) -> oauth2
+                        .bearerTokenResolver(bearerTokenResolver())
                         .jwt(jwtConfigurer ->
                                 jwtConfigurer
                                         .decoder(jwtDecoder)
                                         .jwtAuthenticationConverter(jwtAuthenticationConverter)))
                 .build();
+    }
+
+    @Bean
+    public BearerTokenResolver bearerTokenResolver() {
+        DefaultBearerTokenResolver resolver = new DefaultBearerTokenResolver();
+        resolver.setAllowFormEncodedBodyParameter(false);
+        resolver.setAllowUriQueryParameter(false);
+
+        return request -> {
+            String path = request.getRequestURI();
+            if (matchesAuthWhitelist(path)) {
+                return null;
+            }
+            return resolver.resolve(request);
+        };
+    }
+
+    private boolean matchesAuthWhitelist(String path) {
+        return path.startsWith("/api/auth") || path.startsWith("/auth");
     }
 
     @Bean

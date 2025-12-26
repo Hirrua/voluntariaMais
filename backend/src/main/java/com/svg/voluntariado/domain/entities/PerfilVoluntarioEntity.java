@@ -35,10 +35,14 @@ public class PerfilVoluntarioEntity {
     @Column(name = "telefone_contato", length = 11)
     private String telefoneContato;
 
-    public PerfilVoluntarioEntity(String bio, String disponibilidade, LocalDate dataNascimento, String telefoneContato) {
+    @Column(name = "foto_perfil_url", length = 512)
+    private String fotoPerfilUrl;
+
+    public PerfilVoluntarioEntity(String bio, String disponibilidade, LocalDate dataNascimento, String telefoneContato, String fotoPerfilUrl) {
         this.bio = bio;
         this.disponibilidade = disponibilidade;
         this.dataNascimento = dataNascimento;
         this.telefoneContato = telefoneContato;
+        this.fotoPerfilUrl = fotoPerfilUrl;
     }
 }

@@ -89,6 +89,7 @@ public class VolunteerProfileService {
                 entity.getDisponibilidade(),
                 entity.getDataNascimento(),
                 entity.getTelefoneContato(),
+                entity.getFotoPerfilUrl(),
                 entity.getUsuario().getEndereco()
         );
     }
