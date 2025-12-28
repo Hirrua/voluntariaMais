@@ -37,6 +37,8 @@ public class OngService {
             throw new UserUnauthorizedException();
         }
 
+        // TODO REVER LOGO ONG
+
         UsuarioEntity responsibleUser = userRepository.findById(createOngRequest.idUsuarioResponsavel())
                 .orElseThrow(() -> new RuntimeException("Usuário responsável não encontrado com ID: " + createOngRequest.idUsuarioResponsavel())
         );
