@@ -7,7 +7,6 @@ import { authService } from "@/services/authService";
 import { InfoProfileResponse } from "@/types/volunteer";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import Image from "next/image";
 
 export default function PerfilVoluntario() {
   const router = useRouter();
@@ -79,96 +78,121 @@ export default function PerfilVoluntario() {
     );
   }
 
+  const profileImageSrc =
+    profile?.fotoPerfilUrl?.trim() || "/logo_volunteer.png";
+  const fullName = [profile?.nome, profile?.sobrenome]
+    .filter(Boolean)
+    .join(" ");
+  const availabilityText =
+    profile?.disponibilidade?.trim() || "Não informada";
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <Navbar />
 
       <main className="flex-grow container mx-auto px-4 py-8 md:py-12">
-        <div className="flex justify-between items-center mb-8 md:mb-12">
-          <h1 className="text-3xl md:text-4xl font-bold text-indigo-700">
-            Perfil voluntário
-          </h1>
-          <button
-            onClick={handleLogout}
-            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
-            aria-label="Sair da conta"
-          >
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              aria-hidden="true"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-              />
-            </svg>
-            Sair
-          </button>
-        </div>
+        <div className="space-y-8 md:space-y-10">
+          <section className="rounded-2xl bg-white shadow-sm ring-1 ring-gray-200 p-6 md:p-8">
+            <div className="flex flex-col md:flex-row md:items-center md:gap-8">
+              <div className="relative w-24 h-24 md:w-32 md:h-32 rounded-full overflow-hidden bg-gray-200 border-4 border-white shadow-md">
+                <img
+                  src={profileImageSrc}
+                  alt={`Foto de perfil de ${profile?.nome || "Voluntário"}`}
+                  className="h-full w-full object-cover"
+                  width={160}
+                  height={160}
+                  loading="lazy"
+                />
+              </div>
 
-        {/* Avatar */}
-        <div className="mb-8 md:mb-12">
-          <div className="relative w-32 h-32 md:w-40 md:h-40 rounded-full overflow-hidden bg-gray-200 border-4 border-white shadow-lg">
-            <Image
-              src="/api/placeholder/160/160"
-              alt={`Foto de perfil de ${profile?.nome || "Voluntário"}`}
-              fill
-              className="object-cover"
-              priority
-            />
-          </div>
-        </div>
+              <div className="mt-4 md:mt-0">
+                <p className="text-xs font-semibold uppercase tracking-[0.3em] text-gray-500">
+                  Perfil voluntário
+                </p>
+                <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mt-2">
+                  {fullName || "Voluntário"}
+                </h1>
+                <div className="mt-4 flex flex-wrap gap-2 text-sm">
+                  <span className="inline-flex items-center rounded-full bg-indigo-50 px-3 py-1 text-indigo-700">
+                    Disponibilidade: {availabilityText}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </section>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-12">
-          <div className="space-y-4">
-            <InfoField label="Nome voluntário" value={profile?.nome} />
-            <InfoField label="Sobrenome voluntário" value={profile?.sobrenome} />
-            <InfoField
-              label="Email de contato"
-              value={profile?.email}
-              type="email"
-            />
-            <InfoField
-              label="Telefone de contato"
-              value={profile?.telefoneContato}
-              type="tel"
-            />
-            <InfoField label="Logradouro" value={profile?.endereco?.logradouro} />
-            <InfoField label="Bairro" value={profile?.endereco?.bairro} />
-            <InfoField label="Complemento" value={profile?.endereco?.complemento} />
-            <InfoField label="Cidade" value={profile?.endereco?.cidade} />
-            <InfoField label="Estado" value={profile?.endereco?.estado} />
-            <InfoField label="CEP" value={profile?.endereco?.cep} />
-          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] gap-8">
+            <div className="space-y-6">
+              <section className="rounded-2xl bg-white shadow-sm ring-1 ring-gray-200 p-6">
+                <h2 className="text-lg font-semibold text-gray-900">
+                  Informações pessoais
+                </h2>
+                <dl className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <InfoField label="Nome" value={profile?.nome} />
+                  <InfoField label="Sobrenome" value={profile?.sobrenome} />
+                  <InfoField
+                    label="Data de nascimento"
+                    value={profile?.dataNascimento}
+                    type="date"
+                  />
+                  <InfoField
+                    label="Disponibilidade"
+                    value={profile?.disponibilidade}
+                  />
+                </dl>
+              </section>
 
-          <div className="space-y-4 md:pl-8 lg:pl-12 md:border-l border-gray-200">
-            <InfoField label="Bio voluntário" value={profile?.bio} />
-            <InfoField
-              label="Disponibilidade"
-              value={profile?.disponibilidade}
-            />
-            <InfoField
-              label="Data de nascimento"
-              value={profile?.dataNascimento}
-              type="date"
-            />
-          </div>
+              <section className="rounded-2xl bg-white shadow-sm ring-1 ring-gray-200 p-6">
+                <h2 className="text-lg font-semibold text-gray-900">
+                  Contato
+                </h2>
+                <dl className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <InfoField label="Email" value={profile?.email} type="email" />
+                  <InfoField
+                    label="Telefone"
+                    value={profile?.telefoneContato}
+                    type="tel"
+                  />
+                </dl>
+              </section>
 
-          <div className="md:pl-8 lg:pl-12 md:border-l border-gray-200">
-            <h2 className="text-xl font-bold text-indigo-700 mb-6">
-              Inscrições
-            </h2>
-            <ul className="space-y-3" role="list">
-              <InscricaoItem text="Agallhey of type and scrambled it to make" />
-              <InscricaoItem text="Agallhey of type and scrambled it to make" />
-              <InscricaoItem text="Agallhey of type and scrambled it to make" />
-              <InscricaoItem text="Agallhey of type and scrambled it to make" />
-            </ul>
+              <section className="rounded-2xl bg-white shadow-sm ring-1 ring-gray-200 p-6">
+                <h2 className="text-lg font-semibold text-gray-900">
+                  Endereço
+                </h2>
+                <dl className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <InfoField label="Logradouro" value={profile?.endereco?.logradouro} />
+                  <InfoField label="Bairro" value={profile?.endereco?.bairro} />
+                  <InfoField label="Complemento" value={profile?.endereco?.complemento} />
+                  <InfoField label="Cidade" value={profile?.endereco?.cidade} />
+                  <InfoField label="Estado" value={profile?.endereco?.estado} />
+                  <InfoField label="CEP" value={profile?.endereco?.cep} />
+                </dl>
+              </section>
+            </div>
+
+            <div className="space-y-6">
+              <section className="rounded-2xl bg-white shadow-sm ring-1 ring-gray-200 p-6">
+                <h2 className="text-lg font-semibold text-gray-900">
+                  Bio do voluntário
+                </h2>
+                <p className="mt-4 text-sm text-gray-700 leading-relaxed">
+                  {profile?.bio || "-"}
+                </p>
+              </section>
+
+              <section className="rounded-2xl bg-white shadow-sm ring-1 ring-gray-200 p-6">
+                <h2 className="text-lg font-semibold text-gray-900">
+                  Inscrições
+                </h2>
+                <ul className="mt-4 space-y-3" role="list">
+                  <InscricaoItem text="Agallhey of type and scrambled it to make" />
+                  <InscricaoItem text="Agallhey of type and scrambled it to make" />
+                  <InscricaoItem text="Agallhey of type and scrambled it to make" />
+                  <InscricaoItem text="Agallhey of type and scrambled it to make" />
+                </ul>
+              </section>
+            </div>
           </div>
         </div>
       </main>
@@ -188,10 +212,12 @@ function InfoField({ label, value, type = "text" }: InfoFieldProps) {
   const displayValue = value || "-";
 
   return (
-    <div className="group">
-      <dt className="text-sm font-medium text-gray-700 mb-1">{label}</dt>
+    <div className="space-y-1">
+      <dt className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+        {label}
+      </dt>
       <dd
-        className="text-base text-gray-900"
+        className="text-sm text-gray-900 break-words"
         {...(type === "email" && { itemProp: "email" })}
         {...(type === "tel" && { itemProp: "telephone" })}
       >
