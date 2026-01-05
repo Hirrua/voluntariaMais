@@ -41,5 +41,6 @@ export interface InfoProfileResponse {
   disponibilidade: string;
   dataNascimento: string;
   telefoneContato: string;
+  fotoPerfilUrl?: string | null;
   endereco: EnderecoEntity;
 }

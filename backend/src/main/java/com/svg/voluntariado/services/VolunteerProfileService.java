@@ -20,12 +20,14 @@ public class VolunteerProfileService {
     private final UserRepository userRepository;
     private final VolunteerProfileRepository volunteerProfileRepository;
     private final ProfileMapper profileMapper;
+    private final StorageService storageService;
 
     @Autowired
-    public VolunteerProfileService(VolunteerProfileRepository volunteerProfileRepository, UserRepository userRepository, ProfileMapper profileMapper) {
+    public VolunteerProfileService(VolunteerProfileRepository volunteerProfileRepository, UserRepository userRepository, ProfileMapper profileMapper, StorageService storageService) {
         this.userRepository = userRepository;
         this.volunteerProfileRepository = volunteerProfileRepository;
         this.profileMapper = profileMapper;
+        this.storageService = storageService;
     }
 
     @Transactional
@@ -80,6 +82,7 @@ public class VolunteerProfileService {
     }
 
     public InfoProfileResponse toInfoProfileResponse(PerfilVoluntarioEntity entity) {
+        String fotoPerfilUrl = storageService.buildPublicUrl(entity.getFotoPerfilUrl());
         return new InfoProfileResponse(
                 entity.getId(),
                 entity.getUsuario().getNome(),
@@ -89,7 +92,7 @@ public class VolunteerProfileService {
                 entity.getDisponibilidade(),
                 entity.getDataNascimento(),
                 entity.getTelefoneContato(),
-                entity.getFotoPerfilUrl(),
+                fotoPerfilUrl,
                 entity.getUsuario().getEndereco()
         );
     }

@@ -20,7 +20,7 @@ export default function Home() {
       try {
         setLoading(true);
         setError(null);
-        const data = await projectService.getProjects({ page: 1, itens: 6 });
+        const data = await projectService.getProjects({ page: 0, itens: 6 });
         setProjects(data.content);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Erro ao buscar Porjetos");
