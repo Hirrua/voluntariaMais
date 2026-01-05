@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Aprovação de ONG</title>
+</head>
+<body style="font-family: sans-serif;">
+<h2>Solicitação de criação de ONG</h2>
+<p>
+    Uma nova ONG foi solicitada e aguarda sua aprovação.
+</p>
+<p>
+    <b>ONG:</b> <span th:text="${ongName}"></span><br>
+    <b>CNPJ:</b> <span th:text="${cnpj}"></span>
+</p>
+<p>
+    <b>Responsável:</b> <span th:text="${responsavelNome}"></span><br>
+    <b>Email:</b> <span th:text="${responsavelEmail}"></span><br>
+    <b>ID do usuário:</b> <span th:text="${responsavelId}"></span>
+</p>
+<p>
+    Este link expira em 2 dias.
+</p>
+<a th:href="${approvalUrl}"
+   style="background-color: #198754; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block; margin-right: 8px;">
+    Aprovar ONG
+</a>
+<a th:href="${rejectionUrl}"
+   style="background-color: #dc3545; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">
+    Rejeitar ONG
+</a>
+<p>
+    Se você não reconhece esta solicitação, ignore este e-mail.
+</p>
+<p>
+    Atenciosamente,<br>
+    Voluntaria+
+</p>
+</body>
+</html>

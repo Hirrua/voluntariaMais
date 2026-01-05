@@ -5,6 +5,7 @@ import com.svg.voluntariado.domain.dto.project.CreateProjectRequest;
 import com.svg.voluntariado.domain.dto.project.SimpleInfoProjectResponse;
 import com.svg.voluntariado.domain.dto.project.UpdateProjectRequest;
 import com.svg.voluntariado.domain.dto.project.UpdateProjectResponse;
+import com.svg.voluntariado.domain.enums.StatusAprovacaoOngEnum;
 import com.svg.voluntariado.mapper.ProjectMapper;
 import com.svg.voluntariado.exceptions.OngNotFoundException;
 import com.svg.voluntariado.exceptions.ProjectNotFoundException;
@@ -12,7 +13,6 @@ import com.svg.voluntariado.repositories.OngRepository;
 import com.svg.voluntariado.repositories.ProjectRepository;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,11 +32,15 @@ public class ProjectService {
     }
 
     @Transactional
-    public Long create(CreateProjectRequest createProjectRequest, Long idAdmin) {
+    public Long create(CreateProjectRequest createProjectRequest, Long idAdmin, boolean isAdminPlataforma) {
         var ong = ongRepository.findById(createProjectRequest.idOng())
                 .orElseThrow(OngNotFoundException::new);
 
-        if (!ong.getUsuarioResponsavel().getId().equals(idAdmin)) {
+        if (!StatusAprovacaoOngEnum.APROVADA.equals(ong.getStatus())) {
+            throw new AccessDeniedException("A ONG precisa estar aprovada para criar projetos.");
+        }
+
+        if (!isAdminPlataforma && !ong.getUsuarioResponsavel().getId().equals(idAdmin)) {
             throw new AccessDeniedException("Apenas o admin da ong pode editar.");
         }
 
@@ -62,12 +66,12 @@ public class ProjectService {
 
 
     @Transactional
-    public UpdateProjectResponse update(Long idProjeto, Long idAdmin, UpdateProjectRequest updateProjectRequest) {
+    public UpdateProjectResponse update(Long idProjeto, Long idAdmin, boolean isAdminPlataforma, UpdateProjectRequest updateProjectRequest) {
         var projeto = projectRepository.findById(idProjeto).orElseThrow(ProjectNotFoundException::new);
         var ong = ongRepository.findById(projeto.getOng().getId())
                 .orElseThrow(OngNotFoundException::new);
 
-        if (!ong.getUsuarioResponsavel().getId().equals(idAdmin)) {
+        if (!isAdminPlataforma && !ong.getUsuarioResponsavel().getId().equals(idAdmin)) {
             throw new AccessDeniedException("Apenas o admin da ong pode editar.");
         }
 
@@ -78,9 +82,8 @@ public class ProjectService {
     }
 
     @Transactional
-    public void delete(Long idProjeto, Long idAdmin, Jwt principal) {
+    public void delete(Long idProjeto, Long idAdmin, boolean isAdminPlataforma) {
         var projeto = projectRepository.findById(idProjeto).orElseThrow(ProjectNotFoundException::new);
-        boolean isAdminPlataforma = principal.getClaimAsStringList("roles").contains("ADMIN_PLATAFORMA");
 
         if (!isAdminPlataforma) {
             var ong = ongRepository.findById(projeto.getOng().getId())

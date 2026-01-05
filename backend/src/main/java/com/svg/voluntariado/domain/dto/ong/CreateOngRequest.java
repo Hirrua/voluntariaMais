@@ -5,14 +5,13 @@ import com.svg.voluntariado.domain.entities.EnderecoEntity;
 import java.time.LocalDate;
 
 public record CreateOngRequest(
-        Long idUsuarioResponsavel,
+        Long idUsuarioResponsavel, // TODO alterar para e-mail
         String nomeOng,
         String cnpj,
         String descricao,
         String emailContatoOng,
         String telefoneOng,
         String website,
-        String logoUrl,
         LocalDate dataFundacao,
         EnderecoEntity endereco
 ) {

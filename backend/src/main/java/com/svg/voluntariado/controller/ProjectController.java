@@ -5,6 +5,7 @@ import com.svg.voluntariado.domain.dto.project.CreateProjectRequest;
 import com.svg.voluntariado.domain.dto.project.SimpleInfoProjectResponse;
 import com.svg.voluntariado.domain.dto.project.UpdateProjectRequest;
 import com.svg.voluntariado.services.ProjectService;
+import com.svg.voluntariado.utils.JwtRoleUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
@@ -28,10 +29,11 @@ public class ProjectController {
 
     @Operation(summary = "Criar um projeto")
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN_ONG')")
+    @PreAuthorize("hasRole('ADMIN_ONG') or hasRole('ADMIN_PLATAFORMA')")
     public ResponseEntity<?> createProject(@RequestBody CreateProjectRequest createProjectRequest, @AuthenticationPrincipal Jwt principal) {
         Long idAdmin = Long.parseLong(principal.getSubject());
-        var projetoId = projectService.create(createProjectRequest, idAdmin);
+        boolean isAdminPlataforma = JwtRoleUtils.hasRole(principal, "ROLE_ADMIN_PLATAFORMA");
+        var projetoId = projectService.create(createProjectRequest, idAdmin, isAdminPlataforma);
         return ResponseEntity.created(URI.create("/api/projetos/" + projetoId)).body("Projeto criado com suscesso");
     }
 
@@ -44,12 +46,13 @@ public class ProjectController {
 
     @Operation(summary = "Atualizar um projeto")
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN_ONG')")
+    @PreAuthorize("hasRole('ADMIN_ONG') or hasRole('ADMIN_PLATAFORMA')")
     public ResponseEntity<?> updateProject(@PathVariable(value = "id") Long idProjeto,
                                            @AuthenticationPrincipal Jwt principal,
                                            @RequestBody UpdateProjectRequest updateProjectRequest) {
         Long idAdmin = Long.parseLong(principal.getSubject());
-        var update = projectService.update(idProjeto, idAdmin, updateProjectRequest);
+        boolean isAdminPlataforma = JwtRoleUtils.hasRole(principal, "ROLE_ADMIN_PLATAFORMA");
+        var update = projectService.update(idProjeto, idAdmin, isAdminPlataforma, updateProjectRequest);
         return ResponseEntity.ok().body(update);
     }
 
@@ -58,7 +61,8 @@ public class ProjectController {
     @PreAuthorize("hasRole('ADMIN_ONG') or hasRole('ADMIN_PLATAFORMA')")
     public ResponseEntity<?> deleteProject(@PathVariable(value = "id") Long idProjeto, @AuthenticationPrincipal Jwt principal) {
         Long idAdmin = Long.parseLong(principal.getSubject());
-        projectService.delete(idProjeto, idAdmin, principal);
+        boolean isAdminPlataforma = JwtRoleUtils.hasRole(principal, "ROLE_ADMIN_PLATAFORMA");
+        projectService.delete(idProjeto, idAdmin, isAdminPlataforma);
         return ResponseEntity.ok().body("Projeto excluído com sucesso.");
     }
 }
