@@ -11,6 +11,7 @@ import com.svg.voluntariado.repositories.ActivityRepository;
 import com.svg.voluntariado.repositories.SubscriptionRepository;
 import com.svg.voluntariado.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,6 +28,9 @@ public class SubscriptionService {
     private final ActivityRepository activityRepository;
     private final SubscriptionRepository subscriptionRepository;
     private final EmailService emailService;
+
+    @Value("${app.subscription.approval.base-url:}")
+    private String approvalBaseUrl;
 
     @Autowired
     public SubscriptionService(UserRepository userRepository,
@@ -53,7 +57,7 @@ public class SubscriptionService {
             var newSubscription = subscriptionRepository.save(new InscricaoEntity(user, activity));
             subscriptionRepository.save(newSubscription);
 
-            String confirmationUrl = "https://prime-free-tiger.ngrok-free.app/api/inscricao/confirmar?token=" + newSubscription.getTokenConfirmacao();
+            String confirmationUrl = approvalBaseUrl + newSubscription.getTokenConfirmacao();
             Map<String, Object> emailVar = new HashMap<>();
             emailVar.put("userName", user.getNome());
             emailVar.put("activityName", activity.getNomeAtividade());

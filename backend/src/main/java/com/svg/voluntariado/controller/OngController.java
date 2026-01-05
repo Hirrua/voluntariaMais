@@ -4,6 +4,7 @@ import com.svg.voluntariado.domain.dto.ong.CreateOngRequest;
 import com.svg.voluntariado.domain.dto.ong.ListOngResponse;
 import com.svg.voluntariado.domain.dto.ong.UpdateInfoOngRequest;
 import com.svg.voluntariado.services.OngService;
+import com.svg.voluntariado.utils.JwtRoleUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -29,11 +30,13 @@ public class OngController {
 
     @Operation(summary = "Criar uma ONG")
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN_PLATAFORMA')")
+    @PreAuthorize("hasAnyRole('VOLUNTARIO', 'ADMIN_ONG', 'ADMIN_PLATAFORMA')")
     public ResponseEntity<?> createOng(@RequestBody @Valid CreateOngRequest createOngRequest, @AuthenticationPrincipal Jwt principal) {
-        var adminId = Long.parseLong(principal.getSubject());
-        var ongId = ongService.create(createOngRequest, adminId);
-        return ResponseEntity.created(URI.create("/api/ong/" + ongId)).body("Ong criado com sucesso.");
+        var requesterId = Long.parseLong(principal.getSubject());
+        boolean isAdminPlataforma = JwtRoleUtils.hasRole(principal, "ROLE_ADMIN_PLATAFORMA");
+        var ongId = ongService.create(createOngRequest, requesterId, isAdminPlataforma);
+        String message = isAdminPlataforma ? "ONG criada com sucesso." : "Solicitação de ONG enviada para aprovação.";
+        return ResponseEntity.created(URI.create("/api/ong/" + ongId)).body(message);
     }
 
     @Operation(summary = "Buscar informações de uma ONG")
@@ -59,19 +62,35 @@ public class OngController {
 
     @Operation(summary = "Atualizar informações de uma ONG")
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN_ONG')")
+    @PreAuthorize("hasRole('ADMIN_ONG') or hasRole('ADMIN_PLATAFORMA')")
     public ResponseEntity<?> updateOng(@PathVariable(value = "id") Long id, @RequestBody UpdateInfoOngRequest infoOngRequest, @AuthenticationPrincipal Jwt principal) {
         Long idAdmin = Long.parseLong(principal.getSubject());
-        var ongInfos = ongService.update(id, idAdmin, infoOngRequest);
+        boolean isAdminPlataforma = JwtRoleUtils.hasRole(principal, "ROLE_ADMIN_PLATAFORMA");
+        var ongInfos = ongService.update(id, idAdmin, isAdminPlataforma, infoOngRequest);
         return ResponseEntity.ok().body(ongInfos);
     }
 
     @Operation(summary = "Deletar uma ONG")
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN_ONG')")
+    @PreAuthorize("hasRole('ADMIN_ONG') or hasRole('ADMIN_PLATAFORMA')")
     public ResponseEntity<?> deleteOng(@PathVariable(value = "id") Long id, @AuthenticationPrincipal Jwt principal) {
         Long idAdmin = Long.parseLong(principal.getSubject());
-        ongService.delete(id, idAdmin);
+        boolean isAdminPlataforma = JwtRoleUtils.hasRole(principal, "ROLE_ADMIN_PLATAFORMA");
+        ongService.delete(id, idAdmin, isAdminPlataforma);
         return ResponseEntity.ok().build();
+    }
+
+    @Operation(summary = "Aprovar solicitação de ONG")
+    @GetMapping("/aprovacao")
+    public ResponseEntity<?> approveOng(@RequestParam("token") String token) {
+        ongService.approveByToken(token);
+        return ResponseEntity.ok().body("ONG aprovada com sucesso.");
+    }
+
+    @Operation(summary = "Rejeitar solicitação de ONG")
+    @GetMapping("/rejeicao")
+    public ResponseEntity<?> rejectOng(@RequestParam("token") String token) {
+        ongService.rejectByToken(token);
+        return ResponseEntity.ok().body("ONG rejeitada com sucesso.");
     }
 }

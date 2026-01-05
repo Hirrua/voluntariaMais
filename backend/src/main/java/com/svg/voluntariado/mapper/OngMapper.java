@@ -17,6 +17,9 @@ public interface OngMapper {
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "status", ignore = true)
+    @Mapping(target = "logoUrl", ignore = true)
+    @Mapping(target = "tokenAprovacao", ignore = true)
+    @Mapping(target = "dataExpiracaoAprovacao", ignore = true)
     @Mapping(target = "dataCriacaoRegistro", ignore = true)
     @Mapping(target = "dataAprovacaoRejeicao", ignore = true)
     @Mapping(target = "projetos", ignore = true)
@@ -32,6 +35,8 @@ public interface OngMapper {
     @Mapping(target = "endereco", ignore = true)
     @Mapping(target = "dataFundacao", ignore = true)
     @Mapping(target = "status", ignore = true)
+    @Mapping(target = "tokenAprovacao", ignore = true)
+    @Mapping(target = "dataExpiracaoAprovacao", ignore = true)
     @Mapping(target = "dataCriacaoRegistro", ignore = true)
     @Mapping(target = "dataAprovacaoRejeicao", ignore = true)
     @Mapping(target = "projetos", ignore = true)

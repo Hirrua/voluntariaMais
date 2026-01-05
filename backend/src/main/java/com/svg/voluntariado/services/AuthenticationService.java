@@ -11,6 +11,7 @@ import com.svg.voluntariado.mapper.UserMapper;
 import com.svg.voluntariado.repositories.RoleRepository;
 import com.svg.voluntariado.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -28,6 +29,9 @@ public class AuthenticationService {
     private final RoleRepository roleRepository;
     private final UserMapper userMapper;
     private final EmailService emailService;
+
+    @Value("${app.volunteer.approval.base-url:}")
+    private String approvalBaseUrl;
 
     private final BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
 
@@ -74,7 +78,7 @@ public class AuthenticationService {
 
         userRepository.save(newUser);
 
-        String confirmationUrl = "https://prime-free-tiger.ngrok-free.app/api/auth/confirm?token=" + newUser.getTokenConfirmacao();
+        String confirmationUrl = approvalBaseUrl + newUser.getTokenConfirmacao();
         Map<String, Object> emailVar = new HashMap<>();
         emailVar.put("userName", registerRequest.nome() + " " + registerRequest.sobrenome());
         emailVar.put("confirmationUrl", confirmationUrl);
