@@ -12,6 +12,7 @@ import org.mapstruct.ReportingPolicy;
 import org.springframework.data.domain.Page;
 
 import java.util.List;
+import java.util.Set;
 
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.ERROR)
 public interface ActivityMapper {
@@ -39,4 +40,10 @@ public interface ActivityMapper {
     @Mapping(target = "version", ignore = true)
     @Mapping(target = "vagasTotais", ignore = true)
     AtividadeEntity toAtividadeEntity(UpdateActivityRequest atividadeRequest, @MappingTarget AtividadeEntity entity);
+
+    @Mapping(target = "vagasTotais", expression = "java(entity.getVagasDisponiveis())")
+    Set<SimpleInfoActivityResponse> toSimpleInfoAtividadeResponse(Set<AtividadeEntity> entity);
+
+    @Mapping(target = "vagasTotais", expression = "java(entity.getVagasDisponiveis())")
+    List<SimpleInfoActivityResponse> toSimpleInfoAtividadeResponseList(List<AtividadeEntity> entity);
 }

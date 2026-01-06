@@ -30,17 +30,15 @@ public class ActivityService {
     private final ActivityRepository activityRepository;
     private final ProjectRepository projectRepository;
     private final ActivityMapper activityMapper;
-    private final OngRepository ongRepository;
     private final ProjectMapper projectMapper;
     private final OngMapper ongMapper;
 
     public ActivityService(ActivityRepository activityRepository, ProjectRepository projectRepository,
-                           ActivityMapper activityMapper, OngRepository ongRepository,
+                           ActivityMapper activityMapper,
                            ProjectMapper projectMapper, OngMapper ongMapper) {
         this.activityRepository = activityRepository;
         this.projectRepository = projectRepository;
         this.activityMapper = activityMapper;
-        this.ongRepository = ongRepository;
         this.projectMapper = projectMapper;
         this.ongMapper = ongMapper;
     }

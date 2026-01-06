@@ -1,11 +1,15 @@
 package com.svg.voluntariado.services;
 
 import com.svg.voluntariado.domain.dto.PageResponse;
-import com.svg.voluntariado.domain.dto.project.CreateProjectRequest;
-import com.svg.voluntariado.domain.dto.project.SimpleInfoProjectResponse;
-import com.svg.voluntariado.domain.dto.project.UpdateProjectRequest;
-import com.svg.voluntariado.domain.dto.project.UpdateProjectResponse;
+import com.svg.voluntariado.domain.dto.activity.SimpleInfoActivityResponse;
+import com.svg.voluntariado.domain.dto.ong.OngContextResponse;
+import com.svg.voluntariado.domain.dto.project.*;
+import com.svg.voluntariado.domain.entities.AtividadeEntity;
+import com.svg.voluntariado.domain.entities.OngEntity;
+import com.svg.voluntariado.domain.entities.ProjetoEntity;
 import com.svg.voluntariado.domain.enums.StatusAprovacaoOngEnum;
+import com.svg.voluntariado.mapper.ActivityMapper;
+import com.svg.voluntariado.mapper.OngMapper;
 import com.svg.voluntariado.mapper.ProjectMapper;
 import com.svg.voluntariado.exceptions.OngNotFoundException;
 import com.svg.voluntariado.exceptions.ProjectNotFoundException;
@@ -17,6 +21,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.OffsetDateTime;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Set;
 
 @Service
 public class ProjectService {
@@ -24,11 +31,16 @@ public class ProjectService {
     private final ProjectRepository projectRepository;
     private final OngRepository ongRepository;
     private final ProjectMapper projectMapper;
+    private final OngMapper ongMapper;
+    private final ActivityMapper activityMapper;
 
-    public ProjectService(ProjectRepository projectRepository, OngRepository ongRepository, ProjectMapper projectMapper) {
+    public ProjectService(ProjectRepository projectRepository, OngRepository ongRepository, ProjectMapper projectMapper,
+                          OngMapper ongMapper, ActivityMapper activityMapper) {
         this.projectRepository = projectRepository;
         this.ongRepository = ongRepository;
         this.projectMapper = projectMapper;
+        this.ongMapper = ongMapper;
+        this.activityMapper = activityMapper;
     }
 
     @Transactional
@@ -62,8 +74,24 @@ public class ProjectService {
         return PageResponse.from(projetos, projetosDto);
     }
 
-    // TODO método para buscar projeto e as atividade
+    @Transactional(readOnly = true)
+    public OngProjectAndActivityInfo getOngProjectAndActivityInfo(Long idProject) {
+        ProjetoEntity projectInfo = projectRepository.findById(idProject).orElseThrow(ProjectNotFoundException::new);
+        OngEntity ongInfo = projectInfo.getOng();
+        List<AtividadeEntity> activitiesOrdered = projectInfo.getAtividades().stream()
+                .sorted(Comparator.comparing(AtividadeEntity::getDataHoraInicioAtividade))
+                .toList();
 
+        SimpleInfoProjectResponse projectMap = projectMapper.toSimpleInfoProjetoResponse(projectInfo);
+        OngContextResponse ongMap = ongMapper.toOngContextoResponse(ongInfo);
+        List<SimpleInfoActivityResponse> activitiesMap = activityMapper.toSimpleInfoAtividadeResponseList(activitiesOrdered);
+
+        return new OngProjectAndActivityInfo(
+                projectMap,
+                ongMap,
+                activitiesMap
+        );
+    }
 
     @Transactional
     public UpdateProjectResponse update(Long idProjeto, Long idAdmin, boolean isAdminPlataforma, UpdateProjectRequest updateProjectRequest) {

@@ -18,6 +18,13 @@ import java.util.Set;
 @NoArgsConstructor
 @EqualsAndHashCode(of = "id")
 @Entity
+@NamedEntityGraph(
+        name = "Projeto.ong.atividade",
+        attributeNodes = {
+                @NamedAttributeNode("ong"),
+                @NamedAttributeNode("atividades"),
+        }
+)
 @Table(name = "tb_projeto")
 public class ProjetoEntity {
 

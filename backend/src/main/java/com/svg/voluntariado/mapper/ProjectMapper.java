@@ -35,4 +35,7 @@ public interface ProjectMapper {
     UpdateProjectResponse toUpdateProjetoResponse(ProjetoEntity entity);
 
     ProjectContextResponse toProjetoContextoResponse(ProjetoEntity entity);
+
+    SimpleInfoProjectResponse toSimpleInfoProjetoResponse(ProjetoEntity entity);
+
 }
