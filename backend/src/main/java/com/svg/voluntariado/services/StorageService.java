@@ -15,9 +15,6 @@ public class StorageService {
     @Value("${cloudflare.r2.bucket}")
     private String bucket;
 
-    @Value("${cloudflare.r2.account-id:}")
-    private String accountId;
-
     @Value("${cloudflare.r2.public-url:}")
     private String publicUrl;
 
@@ -91,12 +88,12 @@ public class StorageService {
             return trimmedKey;
         }
 
-        String baseUrl = resolvePublicBaseUrl();
+        String baseUrl = publicUrl == null ? "" : publicUrl.trim();
         if (baseUrl.isEmpty()) {
             return trimmedKey;
         }
 
-        return baseUrl + "/" + normalizeKey(trimmedKey);
+        return baseUrl + "/" + trimmedKey;
     }
 
     public List<String> listFiles(StorageFolder folder, Long entityId) {
@@ -130,70 +127,5 @@ public class StorageService {
                         .key(key)
                         .build()
         );
-    }
-
-    private String normalizeBaseUrl(String baseUrl) {
-        if (baseUrl == null) {
-            return "";
-        }
-
-        String trimmed = baseUrl.trim();
-        if (trimmed.isEmpty()) {
-            return "";
-        }
-
-        int end = trimmed.length();
-        while (end > 0 && trimmed.charAt(end - 1) == '/') {
-            end--;
-        }
-
-        return trimmed.substring(0, end);
-    }
-
-    private String resolvePublicBaseUrl() {
-        String explicitBaseUrl = normalizeBaseUrl(publicUrl);
-        if (!explicitBaseUrl.isEmpty()) {
-            return explicitBaseUrl;
-        }
-
-        String account = normalizeSegment(accountId);
-        String bucketName = normalizeSegment(bucket);
-        if (account.isEmpty() || bucketName.isEmpty()) {
-            return "";
-        }
-
-        return "https://" + account + ".r2.cloudflarestorage.com/" + bucketName;
-    }
-
-    private String normalizeKey(String key) {
-        int start = 0;
-        int length = key.length();
-        while (start < length && key.charAt(start) == '/') {
-            start++;
-        }
-
-        return key.substring(start);
-    }
-
-    private String normalizeSegment(String value) {
-        if (value == null) {
-            return "";
-        }
-
-        String trimmed = value.trim();
-        if (trimmed.isEmpty()) {
-            return "";
-        }
-
-        int start = 0;
-        int end = trimmed.length();
-        while (start < end && trimmed.charAt(start) == '/') {
-            start++;
-        }
-        while (end > start && trimmed.charAt(end - 1) == '/') {
-            end--;
-        }
-
-        return trimmed.substring(start, end);
     }
 }

@@ -38,8 +38,6 @@ public class PerfilVoluntarioEntity {
     @Column(name = "foto_perfil_url", length = 512)
     private String fotoPerfilUrl;
 
-    // TODO adicionar campo para armazenar chave da imagem
-
     public PerfilVoluntarioEntity(String bio, String disponibilidade, LocalDate dataNascimento, String telefoneContato, String fotoPerfilUrl) {
         this.bio = bio;
         this.disponibilidade = disponibilidade;

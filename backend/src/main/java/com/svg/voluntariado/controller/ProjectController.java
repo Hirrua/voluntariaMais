@@ -44,6 +44,12 @@ public class ProjectController {
         return ResponseEntity.ok(projetos);
     }
 
+    @GetMapping("/infos/{id}")
+    public ResponseEntity<?> getOngProjectAndActivityInfo(@PathVariable(value = "id") Long id) {
+        var projectInfo = projectService.getOngProjectAndActivityInfo(id);
+        return ResponseEntity.ok(projectInfo);
+    }
+
     @Operation(summary = "Atualizar um projeto")
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN_ONG') or hasRole('ADMIN_PLATAFORMA')")
