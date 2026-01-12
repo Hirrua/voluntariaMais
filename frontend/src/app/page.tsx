@@ -71,12 +71,14 @@ export default function Home() {
         {!loading && !error && (
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredProjects.map((ong, index) => (
+              {filteredProjects.map((ong) => (
                 <ProjectCard
-                  key={index}
+                  key={ong.id}
+                  id={ong.id}
                   title={ong.nome}
                   publicoAlvo={ong.publicoAlvo}
                   objetivo={ong.objetivo}
+                  imageUrl={ong.urlImagemDestaque}
                 />
               ))}
             </div>

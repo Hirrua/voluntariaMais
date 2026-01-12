@@ -8,8 +8,8 @@ export const authService = {
     return response.data;
   },
 
-  async logout(): Promise<void> { //TODO implementar logout no backend
-    await api.post("/auth/logout");
+  async logout(): Promise<void> {
+    await api.post("/auth/logout")
   },
 
   async checkAuth(): Promise<boolean> {

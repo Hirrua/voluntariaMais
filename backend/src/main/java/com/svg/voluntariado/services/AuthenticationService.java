@@ -67,6 +67,16 @@ public class AuthenticationService {
                 .build();
     }
 
+    public ResponseCookie logout() {
+        return ResponseCookie.from("access_volunteer", "")
+                .httpOnly(true)
+                .secure(false) // Em produção, usar true com HTTPS
+                .path("/")
+                .maxAge(0)
+                .sameSite("Lax")
+                .build();
+    }
+
     public void register(UserRegisterRequest registerRequest) {
         RoleEntity defaultRole = roleRepository.findByNome("ROLE_VOLUNTARIO");
         var senhaHash = bCryptPasswordEncoder.encode(registerRequest.senha());

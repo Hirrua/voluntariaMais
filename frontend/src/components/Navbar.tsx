@@ -5,6 +5,15 @@ import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { authService } from "@/services/authService";
+import { volunteerService } from "@/services/volunteerService";
+import { isAdminOng } from "@/lib/roles";
+import {
+  ONG_DRAFT_KEY,
+  ONG_LOGO_KEY,
+  PROJECT_DRAFT_KEY,
+  LAST_ONG_ID_KEY,
+  LAST_PROJECT_ID_KEY,
+} from "@/lib/createFlowStorage";
 
 export default function Navbar() {
   const router = useRouter();
@@ -13,15 +22,23 @@ export default function Navbar() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [isOngAdmin, setIsOngAdmin] = useState(false);
 
   useEffect(() => {
     const checkAuth = async () => {
-      const authenticated = await authService.checkAuth();
-      setIsAuthenticated(authenticated);
-      setLoading(false);
-    };
+      try {
+        const user = await volunteerService.getCurrentUser()
+        setIsAuthenticated(true)
+        setIsOngAdmin(isAdminOng(user.roles))
+      } catch (error) {
+        setIsAuthenticated(false)
+        setIsOngAdmin(false)
+      } finally {
+        setLoading(false)
+      }
+    }
 
-    checkAuth();
+    checkAuth()
   }, [pathname]);
 
   useEffect(() => {
@@ -40,16 +57,26 @@ export default function Navbar() {
     };
   }, [showUserMenu]);
 
+  const clearCreateFlowStorage = () => {
+    sessionStorage.removeItem(ONG_DRAFT_KEY)
+    sessionStorage.removeItem(ONG_LOGO_KEY)
+    sessionStorage.removeItem(PROJECT_DRAFT_KEY)
+    sessionStorage.removeItem(LAST_ONG_ID_KEY)
+    sessionStorage.removeItem(LAST_PROJECT_ID_KEY)
+  }
+
   const handleLogout = async () => {
     try {
-      await authService.logout();
-      setIsAuthenticated(false);
-      router.push("/");
+      await authService.logout()
     } catch (error) {
-      setIsAuthenticated(false);
-      router.push("/");
+    } finally {
+      clearCreateFlowStorage()
+      setIsAuthenticated(false)
+      setIsOngAdmin(false)
+      setShowUserMenu(false)
+      router.push("/login")
     }
-  };
+  }
 
   return (
     <nav className="bg-white shadow-md">
@@ -128,6 +155,31 @@ export default function Navbar() {
 
               {showUserMenu && (
                 <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-1 z-50 border border-gray-200">
+                  {isOngAdmin && (
+                    <Link
+                      href="/ong/perfil"
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                      onClick={() => setShowUserMenu(false)}
+                    >
+                      <div className="flex items-center gap-2">
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M3 10h18M7 6h10l2 4H5l2-4zM5 10v8h14v-8"
+                          />
+                        </svg>
+                        Minha ONG
+                      </div>
+                    </Link>
+                  )}
+
                   <Link
                     href="/perfil"
                     className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
@@ -150,6 +202,14 @@ export default function Navbar() {
                       Meu Perfil
                     </div>
                   </Link>
+
+                  <button
+                    type="button"
+                    onClick={handleLogout}
+                    className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 transition-colors"
+                  >
+                    Sair
+                  </button>
                 </div>
               )}
             </div>

@@ -26,8 +26,12 @@ public interface ActivityMapper {
     @Mapping(target = "version", ignore = true)
     AtividadeEntity toAtividadeEntity(CreateActivityRequest createActivityRequest);
 
-    @Mapping(target = "vagasTotais", expression = "java(entity.getVagasDisponiveis())")
     List<SimpleInfoActivityResponse> toSimpleInfoAtividadeResponse(Page<AtividadeEntity> entities);
+
+    @Mapping(target = "vagasTotais", expression = "java(entity.getVagasDisponiveis())")
+    @Mapping(target = "idInscricao", ignore = true)
+    @Mapping(target = "statusInscricao", ignore = true)
+    SimpleInfoActivityResponse toSimpleInfoAtividadeResponse(AtividadeEntity entity);
 
     UpdateActivityResponse toUpdateAtividadeResponse(AtividadeEntity entity);
 
@@ -41,9 +45,7 @@ public interface ActivityMapper {
     @Mapping(target = "vagasTotais", ignore = true)
     AtividadeEntity toAtividadeEntity(UpdateActivityRequest atividadeRequest, @MappingTarget AtividadeEntity entity);
 
-    @Mapping(target = "vagasTotais", expression = "java(entity.getVagasDisponiveis())")
     Set<SimpleInfoActivityResponse> toSimpleInfoAtividadeResponse(Set<AtividadeEntity> entity);
 
-    @Mapping(target = "vagasTotais", expression = "java(entity.getVagasDisponiveis())")
     List<SimpleInfoActivityResponse> toSimpleInfoAtividadeResponseList(List<AtividadeEntity> entity);
 }

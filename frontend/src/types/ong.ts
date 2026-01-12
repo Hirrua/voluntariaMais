@@ -1,3 +1,5 @@
+import { AddressPayload } from "./address";
+
 export interface OngDTO {
   nomeOng: string;
   descricao: string;
@@ -5,6 +7,18 @@ export interface OngDTO {
   website: string;
   logoUrl: string;
   dataFundacao: string;
+}
+
+export interface CreateOngRequest {
+  idUsuarioResponsavel: number;
+  nomeOng: string;
+  cnpj: string;
+  descricao: string;
+  emailContatoOng: string;
+  telefoneOng: string;
+  website: string;
+  dataFundacao: string | null;
+  endereco: AddressPayload;
 }
 
 export interface OngApiResponse {

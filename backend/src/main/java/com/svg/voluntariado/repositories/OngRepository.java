@@ -17,4 +17,6 @@ public interface OngRepository extends JpaRepository<OngEntity, Long> {
     Optional<OngEntity> findByIdAndStatus(Long id, StatusAprovacaoOngEnum status);
 
     Optional<OngEntity> findByTokenAprovacao(String tokenAprovacao);
+
+    Optional<OngEntity> findByUsuarioResponsavelId(Long usuarioResponsavelId);
 }

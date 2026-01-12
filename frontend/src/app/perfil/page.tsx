@@ -1,27 +1,16 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { volunteerService } from "@/services/volunteerService";
-import { authService } from "@/services/authService";
 import { InfoProfileResponse } from "@/types/volunteer";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
 export default function PerfilVoluntario() {
-  const router = useRouter();
   const [profile, setProfile] = useState<InfoProfileResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  const handleLogout = async () => {
-    try {
-      await authService.logout();
-      router.push("/login");
-    } catch (err) {
-      router.push("/login");
-    }
-  };
 
   useEffect(() => {
     const fetchProfileData = async () => {
@@ -172,6 +161,23 @@ export default function PerfilVoluntario() {
             </div>
 
             <div className="space-y-6">
+              <section className="rounded-2xl bg-white shadow-sm ring-1 ring-gray-200 p-6">
+                <h2 className="text-lg font-semibold text-gray-900">
+                  ONG
+                </h2>
+                <p className="mt-4 text-sm text-gray-700 leading-relaxed">
+                  Representa uma ONG? Solicite o cadastro (sujeito à aprovação).
+                </p>
+                <div className="mt-6">
+                  <Link
+                    href="/ong/criar"
+                    className="inline-flex items-center justify-center rounded-lg bg-[#2A2599] px-5 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#1f1b7a]"
+                  >
+                    Solicitar cadastro
+                  </Link>
+                </div>
+              </section>
+
               <section className="rounded-2xl bg-white shadow-sm ring-1 ring-gray-200 p-6">
                 <h2 className="text-lg font-semibold text-gray-900">
                   Bio do voluntário

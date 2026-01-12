@@ -59,15 +59,14 @@ public class SecurityConfig {
     };
 
     private static final String[] ONG_WHITELIST = {
-            "/api/ong/info",
-            "/api/ong/info/{id}",
-            "/info/about/{idOng}",
+            "/api/ong/info/**",
+            "/api/ong/info/about/**",
             "/api/ong/aprovacao",
             "/api/ong/rejeicao"
     };
 
     private static final String[] PROJECT_WHITELIST = {
-            "/api/projetos/infos",
+            "/api/projetos/infos/**",
     };
 
     private static final String[] AUTH_WHITELIST = {

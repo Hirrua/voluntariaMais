@@ -48,8 +48,12 @@ public class OngController {
 
     @Operation(summary = "Buscar informações de uma ONG e seus projetos vinculados")
     @GetMapping("/info/about/{idOng}")
-    public ResponseEntity<?> getInfoOngAndProject(@PathVariable(value = "idOng") Long idOng) {
-        var infos = ongService.findOngAndProjects(idOng);
+    public ResponseEntity<?> getInfoOngAndProject(@PathVariable(value = "idOng") Long idOng,
+                                                  @AuthenticationPrincipal Jwt principal) {
+        Long requesterId = principal != null ? Long.parseLong(principal.getSubject()) : null;
+        boolean isAdminOng = JwtRoleUtils.hasRole(principal, "ROLE_ADMIN_ONG");
+        boolean isAdminPlataforma = JwtRoleUtils.hasRole(principal, "ROLE_ADMIN_PLATAFORMA");
+        var infos = ongService.findOngAndProjects(idOng, requesterId, isAdminOng, isAdminPlataforma);
         return ResponseEntity.ok().body(infos);
     }
 

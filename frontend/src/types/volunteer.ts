@@ -44,3 +44,11 @@ export interface InfoProfileResponse {
   fotoPerfilUrl?: string | null;
   endereco: EnderecoEntity;
 }
+
+export interface UserInfoResponse {
+  id: number;
+  nome: string;
+  email: string;
+  roles: string[];
+  ongId?: number | null;
+}

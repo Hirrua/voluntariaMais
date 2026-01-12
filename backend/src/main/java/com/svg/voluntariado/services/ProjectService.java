@@ -5,25 +5,29 @@ import com.svg.voluntariado.domain.dto.activity.SimpleInfoActivityResponse;
 import com.svg.voluntariado.domain.dto.ong.OngContextResponse;
 import com.svg.voluntariado.domain.dto.project.*;
 import com.svg.voluntariado.domain.entities.AtividadeEntity;
+import com.svg.voluntariado.domain.entities.InscricaoEntity;
 import com.svg.voluntariado.domain.entities.OngEntity;
 import com.svg.voluntariado.domain.entities.ProjetoEntity;
 import com.svg.voluntariado.domain.enums.StatusAprovacaoOngEnum;
-import com.svg.voluntariado.mapper.ActivityMapper;
 import com.svg.voluntariado.mapper.OngMapper;
 import com.svg.voluntariado.mapper.ProjectMapper;
 import com.svg.voluntariado.exceptions.OngNotFoundException;
 import com.svg.voluntariado.exceptions.ProjectNotFoundException;
 import com.svg.voluntariado.repositories.OngRepository;
 import com.svg.voluntariado.repositories.ProjectRepository;
+import com.svg.voluntariado.repositories.SubscriptionRepository;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.OffsetDateTime;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 public class ProjectService {
@@ -32,15 +36,17 @@ public class ProjectService {
     private final OngRepository ongRepository;
     private final ProjectMapper projectMapper;
     private final OngMapper ongMapper;
-    private final ActivityMapper activityMapper;
+    private final SubscriptionRepository subscriptionRepository;
+    private final StorageService storageService;
 
     public ProjectService(ProjectRepository projectRepository, OngRepository ongRepository, ProjectMapper projectMapper,
-                          OngMapper ongMapper, ActivityMapper activityMapper) {
+                          OngMapper ongMapper, SubscriptionRepository subscriptionRepository, StorageService storageService) {
         this.projectRepository = projectRepository;
         this.ongRepository = ongRepository;
         this.projectMapper = projectMapper;
         this.ongMapper = ongMapper;
-        this.activityMapper = activityMapper;
+        this.subscriptionRepository = subscriptionRepository;
+        this.storageService = storageService;
     }
 
     @Transactional
@@ -70,21 +76,54 @@ public class ProjectService {
             return PageResponse.empty(page, itens);
         }
 
-        var projetosDto = projectMapper.toSimpleInfoProjetoResponse(projetos);
+        var projetosDto = projetos.getContent().stream()
+                .map(projectMapper::toSimpleInfoProjetoResponse)
+                .map(this::withPublicUrl)
+                .toList();
         return PageResponse.from(projetos, projetosDto);
     }
 
     @Transactional(readOnly = true)
-    public OngProjectAndActivityInfo getOngProjectAndActivityInfo(Long idProject) {
+    public OngProjectAndActivityInfo getOngProjectAndActivityInfo(Long idProject, Long idUser) {
         ProjetoEntity projectInfo = projectRepository.findById(idProject).orElseThrow(ProjectNotFoundException::new);
         OngEntity ongInfo = projectInfo.getOng();
         List<AtividadeEntity> activitiesOrdered = projectInfo.getAtividades().stream()
                 .sorted(Comparator.comparing(AtividadeEntity::getDataHoraInicioAtividade))
                 .toList();
 
-        SimpleInfoProjectResponse projectMap = projectMapper.toSimpleInfoProjetoResponse(projectInfo);
+        SimpleInfoProjectResponse projectMap = withPublicUrl(projectMapper.toSimpleInfoProjetoResponse(projectInfo));
         OngContextResponse ongMap = ongMapper.toOngContextoResponse(ongInfo);
-        List<SimpleInfoActivityResponse> activitiesMap = activityMapper.toSimpleInfoAtividadeResponseList(activitiesOrdered);
+        Map<Long, InscricaoEntity> subscriptionsByActivity = (idUser != null && !activitiesOrdered.isEmpty())
+                ? subscriptionRepository.findByUsuarioIdAndAtividadeIdIn(
+                        idUser,
+                        activitiesOrdered.stream().map(AtividadeEntity::getId).toList()
+                )
+                .stream()
+                .collect(Collectors.toMap(
+                        sub -> sub.getAtividade().getId(),
+                        Function.identity(),
+                        (existing, ignored) -> existing
+                ))
+                : Collections.emptyMap();
+
+        List<SimpleInfoActivityResponse> activitiesMap = activitiesOrdered.stream()
+                .map(activity -> {
+                    InscricaoEntity subscription = subscriptionsByActivity.get(activity.getId());
+                    return new SimpleInfoActivityResponse(
+                            activity.getId(),
+                            activity.getNomeAtividade(),
+                            activity.getDescricaoAtividade(),
+                            activity.getDataHoraInicioAtividade(),
+                            activity.getDataHoraFimAtividade(),
+                            activity.getLocalAtividade(),
+                            activity.getVagasTotais(),
+                            activity.getVagasPreenchidasAtividade(),
+                            activity.getDataCriacao(),
+                            subscription != null ? subscription.getId() : null,
+                            subscription != null ? subscription.getStatus() : null
+                    );
+                })
+                .toList();
 
         return new OngProjectAndActivityInfo(
                 projectMap,
@@ -106,7 +145,7 @@ public class ProjectService {
         var projetoMap = projectMapper.toProjetoEntity(updateProjectRequest, projeto);
         projetoMap.setDataAtualizacao(OffsetDateTime.now());
         projectRepository.save(projetoMap);
-        return projectMapper.toUpdateProjetoResponse(projetoMap);
+        return withPublicUrl(projectMapper.toUpdateProjetoResponse(projetoMap));
     }
 
     @Transactional
@@ -123,5 +162,28 @@ public class ProjectService {
         }
 
         projectRepository.delete(projeto);
+    }
+
+    private SimpleInfoProjectResponse withPublicUrl(SimpleInfoProjectResponse response) {
+        return new SimpleInfoProjectResponse(
+                response.id(),
+                response.nome(),
+                response.objetivo(),
+                response.publicoAlvo(),
+                storageService.buildPublicUrl(response.urlImagemDestaque())
+        );
+    }
+
+    private UpdateProjectResponse withPublicUrl(UpdateProjectResponse response) {
+        return new UpdateProjectResponse(
+                response.nome(),
+                response.objetivo(),
+                response.descricaoDetalhada(),
+                response.publicoAlvo(),
+                storageService.buildPublicUrl(response.urlImagemDestaque()),
+                response.dataInicioPrevista(),
+                response.dataFimPrevista(),
+                response.dataAtualizacao()
+        );
     }
 }

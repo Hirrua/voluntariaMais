@@ -1,5 +1,5 @@
 import api from "@/lib/api";
-import { InfoProfileResponse } from "@/types/volunteer";
+import { InfoProfileResponse, UserInfoResponse } from "@/types/volunteer";
 
 export const volunteerService = {
 
@@ -12,9 +12,9 @@ export const volunteerService = {
     }
   },
 
-  async getCurrentUser(): Promise<{ id: number; nome: string; email: string }> {
+  async getCurrentUser(): Promise<UserInfoResponse> {
     try {
-      const response = await api.get("/perfil/users/me");
+      const response = await api.get<UserInfoResponse>("/perfil/users/me");
       return response.data;
     } catch (error) {
       throw new Error("Não foi possível carregar os dados do usuário");

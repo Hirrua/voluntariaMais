@@ -12,6 +12,7 @@ public record InfoOngAndProjectResponse(
         String nomeOng,
         String descricao,
         String emailContatoOng,
+        String telefoneOng,
         String website,
         String logoUrl,
         LocalDate dataFundacao,

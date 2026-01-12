@@ -41,6 +41,14 @@ public class AuthenticationController {
         return ResponseEntity.ok().build();
     }
 
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout() {
+        ResponseCookie cookie = authenticationService.logout();
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, cookie.toString())
+                .body("Logout realizado com sucesso.");
+    }
+
     @GetMapping("/confirm")
     public ResponseEntity<?> confirmRegistration(@RequestParam("token") String token) {
         authenticationService.confirmRegistration(token);

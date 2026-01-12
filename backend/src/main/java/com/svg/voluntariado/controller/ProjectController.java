@@ -45,8 +45,10 @@ public class ProjectController {
     }
 
     @GetMapping("/infos/{id}")
-    public ResponseEntity<?> getOngProjectAndActivityInfo(@PathVariable(value = "id") Long id) {
-        var projectInfo = projectService.getOngProjectAndActivityInfo(id);
+    public ResponseEntity<?> getOngProjectAndActivityInfo(@PathVariable(value = "id") Long id,
+                                                          @AuthenticationPrincipal Jwt principal) {
+        Long idUser = principal != null ? Long.parseLong(principal.getSubject()) : null;
+        var projectInfo = projectService.getOngProjectAndActivityInfo(id, idUser);
         return ResponseEntity.ok(projectInfo);
     }
 
