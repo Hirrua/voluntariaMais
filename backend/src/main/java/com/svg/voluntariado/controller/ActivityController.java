@@ -16,7 +16,6 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
-import java.nio.file.AccessDeniedException;
 
 @Tag(name = "Atividades", description = "Endpoints para gerenciar atividades de voluntariado")
 @RestController
@@ -32,7 +31,7 @@ public class ActivityController {
     @Operation(summary = "Cria uma nova atividade")
     @PostMapping
     @PreAuthorize("hasRole('ADMIN_ONG')")
-    public ResponseEntity<?> createActivity(@RequestBody CreateActivityRequest createActivityRequest, @AuthenticationPrincipal Jwt principal) throws AccessDeniedException {
+    public ResponseEntity<?> createActivity(@RequestBody CreateActivityRequest createActivityRequest, @AuthenticationPrincipal Jwt principal) {
         Long idAdmin = Long.parseLong(principal.getSubject());
         var atividadeId = activityService.create(createActivityRequest, idAdmin);
         return ResponseEntity.created(URI.create("/api/atividades/" + atividadeId)).body("Atividade criada com sucesso.");
@@ -60,7 +59,7 @@ public class ActivityController {
     public ResponseEntity<?> updateActivity(@PathVariable(value = "id") Long id,
                                             @AuthenticationPrincipal Jwt principal,
                                             @RequestBody @Valid UpdateActivityRequest updateActivityRequest)
-            throws ActivityNotFoundException, AccessDeniedException {
+            throws ActivityNotFoundException {
         Long idAdmin = Long.parseLong(principal.getSubject());
         var atividade = activityService.update(id, idAdmin, updateActivityRequest);
         return ResponseEntity.ok().body(atividade);
@@ -70,7 +69,7 @@ public class ActivityController {
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN_ONG')")
     public ResponseEntity<?> deleteActivity(@PathVariable(value = "id") Long id, @AuthenticationPrincipal Jwt principal)
-            throws ActivityNotFoundException, AccessDeniedException {
+            throws ActivityNotFoundException {
         Long idAdmin = Long.parseLong(principal.getSubject());
         activityService.delete(id, idAdmin);
         return ResponseEntity.ok().body("Atividade foi deletada com sucesso");

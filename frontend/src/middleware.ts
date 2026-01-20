@@ -5,8 +5,9 @@ export function middleware(request: NextRequest) {
   const authCookie = request.cookies.get("access_volunteer");
   const isLoginPage = request.nextUrl.pathname === "/login";
   const isPerfilPage = request.nextUrl.pathname.startsWith("/perfil");
+  const isOngPerfilPage = request.nextUrl.pathname.startsWith("/ong/perfil")
 
-  if (isPerfilPage && !authCookie) {
+  if ((isPerfilPage || isOngPerfilPage) && !authCookie) {
     const loginUrl = new URL("/login", request.url);
     loginUrl.searchParams.set("redirect", request.nextUrl.pathname);
     return NextResponse.redirect(loginUrl);
@@ -20,5 +21,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/perfil/:path*", "/login"],
+  matcher: ["/perfil/:path*", "/ong/perfil/:path*", "/login"],
 };

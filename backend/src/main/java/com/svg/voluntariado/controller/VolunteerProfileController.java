@@ -5,6 +5,7 @@ import com.svg.voluntariado.domain.dto.profile.InfoProfileResponse;
 import com.svg.voluntariado.domain.dto.profile.UpdateInfoProfileRequest;
 import com.svg.voluntariado.domain.dto.user.UserInfoDTO;
 import com.svg.voluntariado.exceptions.UserNotFoundException;
+import com.svg.voluntariado.repositories.OngRepository;
 import com.svg.voluntariado.repositories.UserRepository;
 import com.svg.voluntariado.services.VolunteerProfileService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -26,11 +27,13 @@ public class VolunteerProfileController {
 
     private final VolunteerProfileService volunteerProfileService;
     private final UserRepository userRepository;
+    private final OngRepository ongRepository;
 
     @Autowired
-    public VolunteerProfileController(VolunteerProfileService volunteerProfileService, UserRepository userRepository) {
+    public VolunteerProfileController(VolunteerProfileService volunteerProfileService, UserRepository userRepository, OngRepository ongRepository) {
         this.volunteerProfileService = volunteerProfileService;
         this.userRepository = userRepository;
+        this.ongRepository = ongRepository;
     }
 
     @Operation(summary = "Criar um perfil")
@@ -67,7 +70,13 @@ public class VolunteerProfileController {
     @GetMapping("/users/me")
     public ResponseEntity<UserInfoDTO> getCurrentUser(@AuthenticationPrincipal Jwt authentication) {
         var currentUser = userRepository.findByIdIfProfileExists(Long.parseLong(authentication.getSubject())).orElseThrow(UserNotFoundException::new);
-        UserInfoDTO userInfo = new UserInfoDTO(currentUser.getId(), currentUser.getNome(), currentUser.getEmail());
+        var roles = currentUser.getRoles().stream()
+                .map(role -> role.getNome())
+                .toList();
+        Long ongId = ongRepository.findByUsuarioResponsavelId(currentUser.getId())
+                .map(ong -> ong.getId())
+                .orElse(null);
+        UserInfoDTO userInfo = new UserInfoDTO(currentUser.getId(), currentUser.getNome(), currentUser.getEmail(), roles, ongId);
         return ResponseEntity.ok(userInfo);
     }
 

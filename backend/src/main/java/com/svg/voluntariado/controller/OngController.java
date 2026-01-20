@@ -48,8 +48,12 @@ public class OngController {
 
     @Operation(summary = "Buscar informações de uma ONG e seus projetos vinculados")
     @GetMapping("/info/about/{idOng}")
-    public ResponseEntity<?> getInfoOngAndProject(@PathVariable(value = "idOng") Long idOng) {
-        var infos = ongService.findOngAndProjects(idOng);
+    public ResponseEntity<?> getInfoOngAndProject(@PathVariable(value = "idOng") Long idOng,
+                                                  @AuthenticationPrincipal Jwt principal) {
+        Long requesterId = principal != null ? Long.parseLong(principal.getSubject()) : null;
+        boolean isAdminOng = JwtRoleUtils.hasRole(principal, "ROLE_ADMIN_ONG");
+        boolean isAdminPlataforma = JwtRoleUtils.hasRole(principal, "ROLE_ADMIN_PLATAFORMA");
+        var infos = ongService.findOngAndProjects(idOng, requesterId, isAdminOng, isAdminPlataforma);
         return ResponseEntity.ok().body(infos);
     }
 
@@ -65,8 +69,7 @@ public class OngController {
     @PreAuthorize("hasRole('ADMIN_ONG') or hasRole('ADMIN_PLATAFORMA')")
     public ResponseEntity<?> updateOng(@PathVariable(value = "id") Long id, @RequestBody UpdateInfoOngRequest infoOngRequest, @AuthenticationPrincipal Jwt principal) {
         Long idAdmin = Long.parseLong(principal.getSubject());
-        boolean isAdminPlataforma = JwtRoleUtils.hasRole(principal, "ROLE_ADMIN_PLATAFORMA");
-        var ongInfos = ongService.update(id, idAdmin, isAdminPlataforma, infoOngRequest);
+        var ongInfos = ongService.update(id, idAdmin, infoOngRequest);
         return ResponseEntity.ok().body(ongInfos);
     }
 
@@ -75,8 +78,7 @@ public class OngController {
     @PreAuthorize("hasRole('ADMIN_ONG') or hasRole('ADMIN_PLATAFORMA')")
     public ResponseEntity<?> deleteOng(@PathVariable(value = "id") Long id, @AuthenticationPrincipal Jwt principal) {
         Long idAdmin = Long.parseLong(principal.getSubject());
-        boolean isAdminPlataforma = JwtRoleUtils.hasRole(principal, "ROLE_ADMIN_PLATAFORMA");
-        ongService.delete(id, idAdmin, isAdminPlataforma);
+        ongService.delete(id, idAdmin);
         return ResponseEntity.ok().build();
     }
 

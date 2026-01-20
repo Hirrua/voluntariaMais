@@ -23,6 +23,13 @@ export interface SubscriptionResponse {
   infoUserSubscription: InfoUserSubscription;
 }
 
+export interface VolunteerSubscriptionResponse {
+  id: number;
+  dataInscricao: string;
+  statusInscricaoEnum: StatusInscricaoEnum;
+  infoActivitySubscription: InfoActivitySubscription;
+}
+
 export interface EnderecoEntity {
   logradouro: string;
   bairro: string;
@@ -43,4 +50,12 @@ export interface InfoProfileResponse {
   telefoneContato: string;
   fotoPerfilUrl?: string | null;
   endereco: EnderecoEntity;
+}
+
+export interface UserInfoResponse {
+  id: number;
+  nome: string;
+  email: string;
+  roles: string[];
+  ongId?: number | null;
 }

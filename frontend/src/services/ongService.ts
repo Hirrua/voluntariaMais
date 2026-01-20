@@ -1,5 +1,6 @@
 import api from "@/lib/api";
-import { OngDTO } from "@/types/ong";
+import { CreateOngRequest, OngDTO, UpdateOngRequest } from "@/types/ong";
+import { OngInfoWithProjects } from "@/types/ongInfo";
 
 interface GetOngsParams {
   page: number;
@@ -40,4 +41,48 @@ export const ongService = {
     const response = await api.get<OngDTO>(`/ong/info/${id}`);
     return response.data;
   },
+
+  async getOngWithProjects(id: number): Promise<OngInfoWithProjects> {
+    const response = await api.get<OngInfoWithProjects>(`/ong/info/about/${id}`)
+    return response.data
+  },
+
+  async getMyOng(): Promise<OngInfoWithProjects> {
+    const response = await api.get<OngInfoWithProjects>("/me/ong");
+    return response.data;
+  },
+
+  async createOng(payload: CreateOngRequest): Promise<{ message: string; id?: number }> {
+    const response = await api.post<string>("/ong", payload);
+    const id = extractIdFromLocation(response.headers?.location);
+    return { message: response.data, id };
+  },
+
+  async updateOng(id: number, payload: UpdateOngRequest): Promise<void> {
+    await api.put(`/ong/${id}`, payload);
+  },
+
+  async updateMyOng(payload: UpdateOngRequest): Promise<OngInfoWithProjects> {
+    const response = await api.patch<OngInfoWithProjects>("/me/ong", payload);
+    return response.data;
+  },
+
+  async uploadOngLogo(ongId: number, file: File): Promise<string> {
+    const formData = new FormData();
+    formData.append("file", file);
+    const response = await api.post<string>(`/ong/${ongId}/photo`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    return response.data;
+  },
+};
+
+const extractIdFromLocation = (location?: string) => {
+  if (!location) {
+    return undefined;
+  }
+  const match = location.match(/\/(\d+)(?:\/)?$/);
+  return match ? Number(match[1]) : undefined;
 };

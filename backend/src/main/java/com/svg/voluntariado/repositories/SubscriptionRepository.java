@@ -38,4 +38,8 @@ public interface SubscriptionRepository extends JpaRepository<InscricaoEntity, L
             WHERE i.id_inscricao = :id_inscricao""",
             nativeQuery = true)
     Optional<SubscriptionProjection> findOneSubscriptionFlatten(Long id_inscricao);
+
+    List<InscricaoEntity> findByUsuarioIdAndAtividadeIdIn(Long idUsuario, List<Long> idsAtividade);
+
+    List<InscricaoEntity> findByUsuarioId(Long idUsuario);
 }

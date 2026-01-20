@@ -1,27 +1,19 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { volunteerService } from "@/services/volunteerService";
-import { authService } from "@/services/authService";
-import { InfoProfileResponse } from "@/types/volunteer";
+import { InfoProfileResponse, StatusInscricaoEnum, VolunteerSubscriptionResponse } from "@/types/volunteer";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
 export default function PerfilVoluntario() {
-  const router = useRouter();
   const [profile, setProfile] = useState<InfoProfileResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  const handleLogout = async () => {
-    try {
-      await authService.logout();
-      router.push("/login");
-    } catch (err) {
-      router.push("/login");
-    }
-  };
+  const [hasOng, setHasOng] = useState(false);
+  const [subscriptions, setSubscriptions] = useState<VolunteerSubscriptionResponse[]>([]);
+  const [subscriptionsError, setSubscriptionsError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchProfileData = async () => {
@@ -31,8 +23,27 @@ export default function PerfilVoluntario() {
 
         const user = await volunteerService.getCurrentUser();
 
+        setHasOng(Boolean(user.ongId));
         const profileData = await volunteerService.getProfile(user.id);
         setProfile(profileData);
+
+        if (user.roles?.includes("ROLE_VOLUNTARIO")) {
+          try {
+            const subscriptionData = await volunteerService.getMySubscriptions();
+            setSubscriptions(subscriptionData);
+            setSubscriptionsError(null);
+          } catch (subscriptionError) {
+            setSubscriptions([]);
+            setSubscriptionsError(
+              subscriptionError instanceof Error
+                ? subscriptionError.message
+                : "Erro ao carregar inscricoes"
+            );
+          }
+        } else {
+          setSubscriptions([]);
+          setSubscriptionsError(null);
+        }
       } catch (err) {
         setError(
           err instanceof Error
@@ -174,6 +185,32 @@ export default function PerfilVoluntario() {
             <div className="space-y-6">
               <section className="rounded-2xl bg-white shadow-sm ring-1 ring-gray-200 p-6">
                 <h2 className="text-lg font-semibold text-gray-900">
+                  ONG
+                </h2>
+                <p className="mt-4 text-sm text-gray-700 leading-relaxed">
+                  Representa uma ONG? Solicite o cadastro (sujeito à aprovação).
+                </p>
+                <div className="mt-6">
+                  {hasOng ? (
+                    <Link
+                      href="/ong/perfil"
+                      className="inline-flex items-center justify-center rounded-lg bg-[#2A2599] px-5 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#1f1b7a]"
+                    >
+                      Ir para o painel da ONG
+                    </Link>
+                  ) : (
+                    <Link
+                      href="/ong/criar"
+                      className="inline-flex items-center justify-center rounded-lg bg-[#2A2599] px-5 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#1f1b7a]"
+                    >
+                      Cadastrar ONG
+                    </Link>
+                  )}
+                </div>
+              </section>
+
+              <section className="rounded-2xl bg-white shadow-sm ring-1 ring-gray-200 p-6">
+                <h2 className="text-lg font-semibold text-gray-900">
                   Bio do voluntário
                 </h2>
                 <p className="mt-4 text-sm text-gray-700 leading-relaxed">
@@ -186,10 +223,22 @@ export default function PerfilVoluntario() {
                   Inscrições
                 </h2>
                 <ul className="mt-4 space-y-3" role="list">
-                  <InscricaoItem text="Agallhey of type and scrambled it to make" />
-                  <InscricaoItem text="Agallhey of type and scrambled it to make" />
-                  <InscricaoItem text="Agallhey of type and scrambled it to make" />
-                  <InscricaoItem text="Agallhey of type and scrambled it to make" />
+                  {subscriptionsError ? (
+                    <li className="text-sm text-red-500">{subscriptionsError}</li>
+                  ) : subscriptions.length === 0 ? (
+                    <li className="text-sm text-gray-500">
+                      Nenhuma inscricao encontrada
+                    </li>
+                  ) : (
+                    subscriptions.map((subscription) => (
+                      <InscricaoItem
+                        key={subscription.id}
+                        nome={subscription.infoActivitySubscription?.nomeAtividade || "-"}
+                        status={subscription.statusInscricaoEnum}
+                        dataInscricao={subscription.dataInscricao}
+                      />
+                    ))
+                  )}
                 </ul>
               </section>
             </div>
@@ -207,6 +256,32 @@ interface InfoFieldProps {
   value?: string | null;
   type?: "text" | "email" | "tel" | "date";
 }
+
+const formatSubscriptionDate = (value?: string | null) => {
+  if (!value) {
+    return null;
+  }
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return null;
+  }
+  return date.toLocaleDateString("pt-BR");
+};
+
+const formatSubscriptionStatus = (status: StatusInscricaoEnum) => {
+  switch (status) {
+    case "CONFIRMADA":
+      return "Confirmada";
+    case "CANCELADA_PELO_VOLUNTARIO":
+      return "Cancelada";
+    case "RECUSADA_PELA_ONG":
+      return "Recusada";
+    case "CONCLUIDA_PARTICIPACAO":
+      return "Concluida";
+    default:
+      return "Pendente";
+  }
+};
 
 function InfoField({ label, value, type = "text" }: InfoFieldProps) {
   const displayValue = value || "-";
@@ -228,18 +303,24 @@ function InfoField({ label, value, type = "text" }: InfoFieldProps) {
 }
 
 interface InscricaoItemProps {
-  text: string;
+  nome: string;
+  status: StatusInscricaoEnum;
+  dataInscricao?: string | null;
 }
 
-function InscricaoItem({ text }: InscricaoItemProps) {
+function InscricaoItem({ nome, status, dataInscricao }: InscricaoItemProps) {
+  const dateLabel = formatSubscriptionDate(dataInscricao);
+  const statusLabel = formatSubscriptionStatus(status);
+
   return (
-    <li className="text-gray-900 hover:text-indigo-700 transition-colors">
-      <a
-        href="#"
-        className="block underline decoration-gray-900 hover:decoration-indigo-700"
-      >
-        {text}
-      </a>
+    <li className="flex items-center justify-between rounded-lg border border-gray-100 px-3 py-2">
+      <div>
+        <p className="text-sm font-medium text-gray-900">{nome}</p>
+        {dateLabel && (
+          <p className="text-xs text-gray-500">Inscrito em {dateLabel}</p>
+        )}
+      </div>
+      <span className="text-xs font-semibold text-gray-600">{statusLabel}</span>
     </li>
   );
 }

@@ -1,13 +1,13 @@
 package com.svg.voluntariado.services;
 
 import com.svg.voluntariado.domain.dto.ong.*;
+import com.svg.voluntariado.domain.dto.project.SimpleInfoProjectResponse;
 import com.svg.voluntariado.domain.entities.OngEntity;
 import com.svg.voluntariado.domain.entities.RoleEntity;
 import com.svg.voluntariado.domain.entities.UsuarioEntity;
 import com.svg.voluntariado.domain.enums.StatusAprovacaoOngEnum;
 import com.svg.voluntariado.exceptions.ExpiredTokenException;
 import com.svg.voluntariado.exceptions.OngNotFoundException;
-import com.svg.voluntariado.exceptions.ProjectNotFoundException;
 import com.svg.voluntariado.exceptions.TokenNotFoundException;
 import com.svg.voluntariado.exceptions.UserUnauthorizedException;
 import com.svg.voluntariado.mapper.OngMapper;
@@ -17,7 +17,7 @@ import com.svg.voluntariado.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,6 +35,7 @@ public class OngService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final EmailService emailService;
+    private final StorageService storageService;
 
     private static final long APPROVAL_EXPIRY_DAYS = 2L;
 
@@ -45,12 +46,13 @@ public class OngService {
     private String approvalBaseUrl;
 
     public OngService(OngRepository ongRepository, OngMapper ongMapper, UserRepository userRepository,
-                      RoleRepository roleRepository, EmailService emailService) {
+                      RoleRepository roleRepository, EmailService emailService, StorageService storageService) {
         this.userRepository = userRepository;
         this.ongRepository = ongRepository;
         this.ongMapper = ongMapper;
         this.roleRepository = roleRepository;
         this.emailService = emailService;
+        this.storageService = storageService;
     }
 
     @Transactional
@@ -88,18 +90,41 @@ public class OngService {
         return ongMapper.toInfoOngResponse(ong);
     }
 
-    public InfoOngAndProjectResponse findOngAndProjects(Long idOng) {
-        var ongEntity = ongRepository.findByIdAndStatus(idOng, StatusAprovacaoOngEnum.APROVADA);
-        if (ongEntity.isEmpty()) {
-            throw new OngNotFoundException();
+    @Transactional(readOnly = true)
+    public InfoOngAndProjectResponse getForAdmin(Long adminId) {
+        OngEntity ong = getOngByAdminId(adminId);
+        return withPublicUrl(ongMapper.toInfoOngAndProjectResponse(ong));
+    }
+
+    public InfoOngAndProjectResponse findOngAndProjects(Long idOng, Long requesterId, boolean isAdminOng, boolean isAdminPlataforma) {
+        var ongEntity = ongRepository.findById(idOng)
+                .orElseThrow(OngNotFoundException::new);
+
+        var response = ongMapper.toInfoOngAndProjectResponse(ongEntity);
+        boolean canViewProjects = StatusAprovacaoOngEnum.APROVADA.equals(ongEntity.getStatus())
+                || isAdminPlataforma
+                || (isAdminOng
+                    && requesterId != null
+                    && ongEntity.getUsuarioResponsavel() != null
+                    && requesterId.equals(ongEntity.getUsuarioResponsavel().getId()));
+
+        if (!canViewProjects) {
+            response = new InfoOngAndProjectResponse(
+                    response.nomeOng(),
+                    response.descricao(),
+                    response.emailContatoOng(),
+                    response.telefoneOng(),
+                    response.website(),
+                    response.logoUrl(),
+                    response.dataFundacao(),
+                    response.status(),
+                    response.dataCriacaoRegistro(),
+                    response.endereco(),
+                    List.of()
+            );
         }
 
-        var projectEntity = ongEntity.get().getProjetos();
-        if (projectEntity.isEmpty()) {
-            throw new ProjectNotFoundException("Essa ong não possui nenhum projeto cadastrado.");
-        }
-
-        return ongMapper.toInfoOngAndProjectResponse(ongEntity.get());
+        return withPublicUrl(response);
     }
 
     public List<ListOngResponse> findAllOng(int page, int itens) {
@@ -110,27 +135,72 @@ public class OngService {
         return ongMapper.toListOngResponse(ongEntities);
     }
 
-    public InfoOngResponse update(Long idOng, Long idAdmin, boolean isAdminPlataforma, UpdateInfoOngRequest updateInfoOngRequest) {
+    @Transactional
+    public InfoOngResponse update(Long idOng, Long idAdmin, UpdateInfoOngRequest updateInfoOngRequest) {
         var ong = ongRepository.findById(idOng)
                 .orElseThrow(OngNotFoundException::new);
 
-        if (!isAdminPlataforma && !ong.getUsuarioResponsavel().getId().equals(idAdmin)) {
-            throw new BadCredentialsException("Somente o admin da ong pode realizar alterações");
+        if (!ong.getUsuarioResponsavel().getId().equals(idAdmin)) {
+            throw new AccessDeniedException("Acesso negado.");
         }
 
         var ongEntity = ongMapper.toOngEntity(updateInfoOngRequest, ong);
-        return ongMapper.toInfoOngResponse(ongEntity);
+        var saved = ongRepository.save(ongEntity);
+        return ongMapper.toInfoOngResponse(saved);
     }
 
-    public void delete(Long idOng, Long idAdmin, boolean isAdminPlataforma) {
+    public void delete(Long idOng, Long idAdmin) {
         var ong = ongRepository.findById(idOng)
                 .orElseThrow(OngNotFoundException::new);
 
-        if (!isAdminPlataforma && !ong.getUsuarioResponsavel().getId().equals(idAdmin)) {
-            throw new BadCredentialsException("Somente o admin da ong pode realizar alterações");
+        if (!ong.getUsuarioResponsavel().getId().equals(idAdmin)) {
+            throw new AccessDeniedException("Acesso negado.");
         }
 
         ongRepository.delete(ong);
+    }
+
+    @Transactional
+    public InfoOngAndProjectResponse updateForAdmin(Long adminId, UpdateInfoOngRequest updateInfoOngRequest) {
+        var ong = getOngByAdminId(adminId);
+        var ongEntity = ongMapper.toOngEntity(updateInfoOngRequest, ong);
+        var saved = ongRepository.save(ongEntity);
+        return withPublicUrl(ongMapper.toInfoOngAndProjectResponse(saved));
+    }
+
+    private InfoOngAndProjectResponse withPublicUrl(InfoOngAndProjectResponse response) {
+        List<SimpleInfoProjectResponse> projects = response.projectResponse().stream()
+                .map(this::withPublicUrl)
+                .toList();
+
+        return new InfoOngAndProjectResponse(
+                response.nomeOng(),
+                response.descricao(),
+                response.emailContatoOng(),
+                response.telefoneOng(),
+                response.website(),
+                storageService.buildPublicUrl(response.logoUrl()),
+                response.dataFundacao(),
+                response.status(),
+                response.dataCriacaoRegistro(),
+                response.endereco(),
+                projects
+        );
+    }
+
+    private OngEntity getOngByAdminId(Long adminId) {
+        return ongRepository.findByUsuarioResponsavelId(adminId)
+                .orElseThrow(OngNotFoundException::new);
+    }
+
+    private SimpleInfoProjectResponse withPublicUrl(SimpleInfoProjectResponse response) {
+        return new SimpleInfoProjectResponse(
+                response.id(),
+                response.nome(),
+                response.objetivo(),
+                response.publicoAlvo(),
+                storageService.buildPublicUrl(response.urlImagemDestaque())
+        );
     }
 
     @Transactional

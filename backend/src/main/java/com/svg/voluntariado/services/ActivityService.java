@@ -9,19 +9,18 @@ import com.svg.voluntariado.mapper.ActivityMapper;
 import com.svg.voluntariado.mapper.OngMapper;
 import com.svg.voluntariado.mapper.ProjectMapper;
 import com.svg.voluntariado.exceptions.ActivityNotFoundException;
-import com.svg.voluntariado.exceptions.OngNotFoundException;
 import com.svg.voluntariado.exceptions.ProjectNotFoundException;
 import com.svg.voluntariado.repositories.ActivityRepository;
-import com.svg.voluntariado.repositories.OngRepository;
 import com.svg.voluntariado.repositories.ProjectRepository;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.nio.file.AccessDeniedException;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
+import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -44,20 +43,8 @@ public class ActivityService {
     }
 
     @Transactional
-    public Long create(CreateActivityRequest createActivityRequest, Long idAdmin) throws AccessDeniedException {
-        OffsetDateTime dataInicio = createActivityRequest.dataHoraInicioAtividade();
-        OffsetDateTime dataFim = createActivityRequest.dataHoraFimAtividade();
-
-        LocalDate hoje = LocalDate.now(ZoneId.of("America/Sao_Paulo"));
-        LocalDate dataInicioLocalDate = dataInicio.toLocalDate();
-
-        if (dataInicioLocalDate.isBefore(hoje) || dataInicioLocalDate.isEqual(hoje)) {
-            throw new InvalidDateException("A data de início da atividade deve ser a partir de amanhã.");
-        }
-
-        if (dataFim.isBefore(dataInicio)) {
-            throw new InvalidDateException("A data de término não pode ser anterior à data de início.");
-        }
+    public Long create(CreateActivityRequest createActivityRequest, Long idAdmin) {
+        validateDates(createActivityRequest);
 
         var project = projectRepository.findById(createActivityRequest.idProjeto());
         if (project.isEmpty()) {
@@ -76,6 +63,35 @@ public class ActivityService {
     }
 
     @Transactional(readOnly = true)
+    public List<SimpleInfoActivityResponse> listForProjectAdmin(Long projectId, Long adminId) {
+        var project = projectRepository.findById(projectId).orElseThrow(ProjectNotFoundException::new);
+        var ong = project.getOng();
+        if (ong == null || !ong.getUsuarioResponsavel().getId().equals(adminId)) {
+            throw new AccessDeniedException("Somente o admin da ong pode visualizar atividades.");
+        }
+
+        return project.getAtividades().stream()
+                .sorted(Comparator.comparing(AtividadeEntity::getDataHoraInicioAtividade))
+                .map(activityMapper::toSimpleInfoAtividadeResponse)
+                .toList();
+    }
+
+    @Transactional
+    public Long createForProjectAdmin(Long projectId, Long adminId, CreateActivityRequest createActivityRequest) {
+        validateDates(createActivityRequest);
+        var project = projectRepository.findById(projectId).orElseThrow(ProjectNotFoundException::new);
+        var ong = project.getOng();
+        if (ong == null || !ong.getUsuarioResponsavel().getId().equals(adminId)) {
+            throw new AccessDeniedException("Somente o admin da ong pode criar atividades.");
+        }
+
+        var activity = activityMapper.toAtividadeEntity(createActivityRequest);
+        activity.setProjeto(project);
+        activityRepository.save(activity);
+        return activity.getId();
+    }
+
+    @Transactional(readOnly = true)
     public List<SimpleInfoActivityResponse> getAllActivities(int page, int itens) throws ActivityNotFoundException {
         var atividades = activityRepository.findAll(PageRequest.of(page, itens));
         if (atividades.isEmpty()) {
@@ -86,7 +102,7 @@ public class ActivityService {
 
     @Transactional
     public UpdateActivityResponse update(Long idAtividade, Long idAdmin, UpdateActivityRequest atividadeRequest)
-            throws ActivityNotFoundException, AccessDeniedException {
+            throws ActivityNotFoundException {
         var activity = activityRepository.findById(idAtividade).orElseThrow(ActivityNotFoundException::new);
         var project = activity.getProjeto();
 
@@ -102,7 +118,7 @@ public class ActivityService {
     }
 
     @Transactional
-    public void delete(Long idAtividade, Long idAdmin) throws ActivityNotFoundException, AccessDeniedException {
+    public void delete(Long idAtividade, Long idAdmin) throws ActivityNotFoundException {
         var activity = activityRepository.findById(idAtividade).orElseThrow(ActivityNotFoundException::new);
         var project = activity.getProjeto();
 
@@ -143,5 +159,21 @@ public class ActivityService {
                 projetoContexto,
                 ongContexto
         );
+    }
+
+    private void validateDates(CreateActivityRequest createActivityRequest) {
+        OffsetDateTime dataInicio = createActivityRequest.dataHoraInicioAtividade();
+        OffsetDateTime dataFim = createActivityRequest.dataHoraFimAtividade();
+
+        LocalDate hoje = LocalDate.now(ZoneId.of("America/Sao_Paulo"));
+        LocalDate dataInicioLocalDate = dataInicio.toLocalDate();
+
+        if (dataInicioLocalDate.isBefore(hoje) || dataInicioLocalDate.isEqual(hoje)) {
+            throw new InvalidDateException("A data de início da atividade deve ser a partir de amanhã.");
+        }
+
+        if (dataFim.isBefore(dataInicio)) {
+            throw new InvalidDateException("A data de término não pode ser anterior à data de início.");
+        }
     }
 }

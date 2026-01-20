@@ -1,5 +1,6 @@
 import api from "@/lib/api";
 import { LoginRequest, LoginResponse } from "@/types/auth";
+import { UserInfoResponse } from "@/types/volunteer";
 
 export const authService = {
 
@@ -8,8 +9,13 @@ export const authService = {
     return response.data;
   },
 
-  async logout(): Promise<void> { //TODO implementar logout no backend
-    await api.post("/auth/logout");
+  async logout(): Promise<void> {
+    await api.post("/logout")
+  },
+
+  async getMe(): Promise<UserInfoResponse> {
+    const response = await api.get<UserInfoResponse>("/perfil/users/me");
+    return response.data;
   },
 
   async checkAuth(): Promise<boolean> {
