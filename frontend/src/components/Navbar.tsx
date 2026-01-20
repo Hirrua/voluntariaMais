@@ -5,8 +5,7 @@ import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { authService } from "@/services/authService";
-import { volunteerService } from "@/services/volunteerService";
-import { isAdminOng } from "@/lib/roles";
+import { isAdmin } from "@/lib/roles";
 import {
   ONG_DRAFT_KEY,
   ONG_LOGO_KEY,
@@ -22,17 +21,17 @@ export default function Navbar() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
   const [showUserMenu, setShowUserMenu] = useState(false);
-  const [isOngAdmin, setIsOngAdmin] = useState(false);
+  const [isAdminUser, setIsAdminUser] = useState(false);
 
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const user = await volunteerService.getCurrentUser()
+        const user = await authService.getMe()
         setIsAuthenticated(true)
-        setIsOngAdmin(isAdminOng(user.roles))
+        setIsAdminUser(isAdmin(user.roles))
       } catch (error) {
         setIsAuthenticated(false)
-        setIsOngAdmin(false)
+        setIsAdminUser(false)
       } finally {
         setLoading(false)
       }
@@ -72,7 +71,7 @@ export default function Navbar() {
     } finally {
       clearCreateFlowStorage()
       setIsAuthenticated(false)
-      setIsOngAdmin(false)
+      setIsAdminUser(false)
       setShowUserMenu(false)
       router.push("/login")
     }
@@ -155,31 +154,6 @@ export default function Navbar() {
 
               {showUserMenu && (
                 <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-1 z-50 border border-gray-200">
-                  {isOngAdmin && (
-                    <Link
-                      href="/ong/perfil"
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
-                      onClick={() => setShowUserMenu(false)}
-                    >
-                      <div className="flex items-center gap-2">
-                        <svg
-                          className="w-4 h-4"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M3 10h18M7 6h10l2 4H5l2-4zM5 10v8h14v-8"
-                          />
-                        </svg>
-                        Minha ONG
-                      </div>
-                    </Link>
-                  )}
-
                   <Link
                     href="/perfil"
                     className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
@@ -199,9 +173,34 @@ export default function Navbar() {
                           d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
                         />
                       </svg>
-                      Meu Perfil
+                      Perfil
                     </div>
                   </Link>
+
+                  {isAdminUser && (
+                    <Link
+                      href="/admin"
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                      onClick={() => setShowUserMenu(false)}
+                    >
+                      <div className="flex items-center gap-2">
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M9 12h6m2 8H7a2 2 0 01-2-2V8a2 2 0 012-2h6l6 6v6a2 2 0 01-2 2z"
+                          />
+                        </svg>
+                        Painel Admin
+                      </div>
+                    </Link>
+                  )}
 
                   <button
                     type="button"

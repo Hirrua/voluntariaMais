@@ -4,9 +4,7 @@ import type { ChangeEvent, FormEvent } from "react";
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import FormField from "@/components/FormField";
-import SimpleNavbar from "@/components/SimpleNavbar";
 import {
-  LAST_ONG_ID_KEY,
   LAST_PROJECT_ID_KEY,
   ONG_DRAFT_KEY,
   ONG_LOGO_KEY,
@@ -50,7 +48,6 @@ export default function EnderecoPage() {
   const [context, setContext] = useState<"ong" | "project" | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
 
   useEffect(() => {
     const contextParam = searchParams.get("context");
@@ -82,7 +79,6 @@ export default function EnderecoPage() {
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError(null);
-    setSuccess(null);
 
     if (!context) {
       setError("Não foi possível identificar o contexto do endereço.");
@@ -130,26 +126,19 @@ export default function EnderecoPage() {
         sessionStorage.removeItem(ONG_DRAFT_KEY);
         sessionStorage.removeItem(ONG_LOGO_KEY);
 
-        if (!response.id) {
-          setSuccess(
-            "ONG criada com sucesso. Para criar projetos, informe o ID da ONG."
-          );
-          return;
-        }
-
-        sessionStorage.setItem(LAST_ONG_ID_KEY, String(response.id));
-
-        if (logoRaw) {
+        let successMessage = "ONG criada com sucesso.";
+        if (logoRaw && response.id) {
           try {
             const storedLogo = JSON.parse(logoRaw) as StoredLogo;
             const file = await dataUrlToFile(storedLogo);
             await ongService.uploadOngLogo(response.id, file);
           } catch {
-            setError("ONG criada, mas a logo não foi enviada.");
+            successMessage = "ONG criada, mas a logo nao foi enviada.";
           }
         }
 
-        router.push(`/projetos/criar?ongId=${response.id}`);
+        window.alert(successMessage);
+        router.push("/");
         return;
       }
 
@@ -160,14 +149,8 @@ export default function EnderecoPage() {
       }
 
       const draft = JSON.parse(draftRaw) as Omit<CreateProjectRequest, "endereco">;
-      const idOng = Number(draft.idOng);
-      if (!Number.isFinite(idOng)) {
-        setError("ID da ONG inválido.");
-        return;
-      }
 
       const payload: CreateProjectRequest = {
-        idOng,
         nome: draft.nome,
         descricaoDetalhada: draft.descricaoDetalhada || "",
         objetivo: draft.objetivo || "",
@@ -181,21 +164,19 @@ export default function EnderecoPage() {
       const response = await projectService.createProject(payload);
       sessionStorage.removeItem(PROJECT_DRAFT_KEY);
 
-      if (!response.id) {
-        setSuccess(
-          "Projeto criado com sucesso. Para criar atividades, informe o ID do projeto."
-        );
-        return;
+      if (response.id) {
+        sessionStorage.setItem(LAST_PROJECT_ID_KEY, String(response.id));
       }
 
-      sessionStorage.setItem(LAST_PROJECT_ID_KEY, String(response.id));
-      router.push(`/atividades/criar?projetoId=${response.id}`);
+      window.alert("Projeto criado com sucesso.");
+      router.push("/");
     } catch (err: any) {
-      setError(
+      const message =
         err?.response?.data?.message ||
-          err?.response?.data ||
-          "Não foi possível salvar o endereço."
-      );
+        err?.response?.data ||
+        "Não foi possível salvar o endereço.";
+      window.alert(message);
+      router.push("/");
     } finally {
       setLoading(false);
     }
@@ -203,8 +184,6 @@ export default function EnderecoPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      <SimpleNavbar />
-
       <main className="mx-auto max-w-6xl px-6 pb-20 pt-10">
         <div className="mb-8 flex items-center gap-3">
           <button
@@ -318,7 +297,6 @@ export default function EnderecoPage() {
           </div>
 
           {error && <p className="text-sm text-red-500">{error}</p>}
-          {success && <p className="text-sm text-green-600">{success}</p>}
         </form>
       </main>
     </div>

@@ -3,6 +3,7 @@ package com.svg.voluntariado.infra;
 import com.svg.voluntariado.exceptions.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
@@ -86,5 +87,11 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     private ResponseEntity<RestErrorMessage> invalidDataHandler(InvalidDateException exception) {
         RestErrorMessage exceptionResponse = new RestErrorMessage(HttpStatus.NOT_ACCEPTABLE, exception.getMessage());
         return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body(exceptionResponse);
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    private ResponseEntity<RestErrorMessage> accessDeniedHandler(AccessDeniedException exception) {
+        RestErrorMessage exceptionResponse = new RestErrorMessage(HttpStatus.FORBIDDEN, "Acesso negado.");
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(exceptionResponse);
     }
 }

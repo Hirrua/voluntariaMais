@@ -7,6 +7,7 @@ import { useParams } from "next/navigation"
 import Footer from "@/components/Footer"
 import Navbar from "@/components/Navbar"
 import PageContainer from "@/components/PageContainer"
+import { authService } from "@/services/authService"
 import { projectInfoService } from "@/services/projectInfoService"
 import { subscriptionService } from "@/services/subscriptionService"
 import { componentTokens, layoutTokens, typographyTokens } from "@/styles/tokens"
@@ -79,6 +80,8 @@ export default function PainelAtividadePage() {
   const [actionLoading, setActionLoading] = useState<LoadingMap>({})
   const [actionErrors, setActionErrors] = useState<ActivityMap>({})
   const [actionMessages, setActionMessages] = useState<ActivityMap>({})
+  const [canSubscribe, setCanSubscribe] = useState(false)
+  const [authHint, setAuthHint] = useState<string | null>(null)
 
   const activities = useMemo(
     () => projectInfo?.simpleInfoActivityResponse ?? [],
@@ -108,6 +111,24 @@ export default function PainelAtividadePage() {
   }, [projectId])
 
   useEffect(() => {
+    const loadUser = async () => {
+      try {
+        const user = await authService.getMe()
+        const isVolunteer = user.roles?.includes("ROLE_VOLUNTARIO")
+        setCanSubscribe(Boolean(isVolunteer))
+        setAuthHint(
+          isVolunteer ? null : "Apenas voluntarios podem se inscrever."
+        )
+      } catch {
+        setCanSubscribe(false)
+        setAuthHint("Faca login para se inscrever.")
+      }
+    }
+
+    loadUser()
+  }, [])
+
+  useEffect(() => {
     if (!projectInfo) {
       return
     }
@@ -121,6 +142,13 @@ export default function PainelAtividadePage() {
   }, [projectInfo])
 
   const handleSubscribe = async (activityId: number) => {
+    if (!canSubscribe) {
+      setActionErrors((prev) => ({
+        ...prev,
+        [activityId]: authHint || "Apenas voluntarios podem se inscrever.",
+      }))
+      return
+    }
     setActionLoading((prev) => ({ ...prev, [activityId]: true }))
     setActionErrors((prev) => ({ ...prev, [activityId]: "" }))
     setActionMessages((prev) => ({ ...prev, [activityId]: "" }))
@@ -253,6 +281,10 @@ export default function PainelAtividadePage() {
         <section className="space-y-6">
           <h2 className="sr-only">Atividades</h2>
 
+          {authHint && (
+            <p className="text-sm text-gray-500">{authHint}</p>
+          )}
+
           {activities.length === 0 && (
             <div className={componentTokens.emptyState}>
               Nenhuma atividade cadastrada para este projeto
@@ -314,7 +346,7 @@ export default function PainelAtividadePage() {
                         ? handleRevoke(activity.id)
                         : handleSubscribe(activity.id)
                     }
-                    disabled={isBusy || (!isSubscribed && isFull)}
+                    disabled={isBusy || (!isSubscribed && isFull) || (!isSubscribed && !canSubscribe)}
                     className={`rounded-md px-5 py-1.5 text-sm font-semibold text-white transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${buttonStyle}`}
                   >
                     {isBusy ? "Processando" : buttonLabel}

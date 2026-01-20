@@ -1,7 +1,9 @@
 package com.svg.voluntariado.services;
 
 import com.svg.voluntariado.domain.dto.email.EmailRequest;
+import com.svg.voluntariado.domain.dto.activity.InfoActivitySubscription;
 import com.svg.voluntariado.domain.dto.subscription.SubscriptionResponse;
+import com.svg.voluntariado.domain.dto.subscription.VolunteerSubscriptionResponse;
 import com.svg.voluntariado.domain.dto.user.InfoUserSubscription;
 import com.svg.voluntariado.domain.entities.InscricaoEntity;
 import com.svg.voluntariado.domain.enums.StatusInscricaoEnum;
@@ -13,6 +15,7 @@ import com.svg.voluntariado.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,6 +23,8 @@ import java.time.OffsetDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Comparator;
+import java.util.Objects;
 
 @Service
 public class SubscriptionService {
@@ -77,7 +82,13 @@ public class SubscriptionService {
     }
 
     @Transactional(readOnly = true)
-    public List<SubscriptionResponse> getByActivity(Long idAtividade) throws UserNotFoundException, SubscriptionNotFoundException {
+    public List<SubscriptionResponse> getByActivity(Long idAtividade, Long adminId)
+            throws UserNotFoundException, SubscriptionNotFoundException, ActivityNotFoundException {
+        var activity = activityRepository.findById(idAtividade).orElseThrow(ActivityNotFoundException::new);
+        var ong = activity.getProjeto().getOng();
+        if (ong == null || !ong.getUsuarioResponsavel().getId().equals(adminId)) {
+            throw new AccessDeniedException("Acesso negado.");
+        }
 
         List<SubscriptionProjection> projections = subscriptionRepository.findSubscriptionFlatten(idAtividade);
         if (projections.isEmpty()) {
@@ -96,6 +107,29 @@ public class SubscriptionService {
                         )
                 )
         ).toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<VolunteerSubscriptionResponse> getByUser(Long userId) {
+        return subscriptionRepository.findByUsuarioId(userId).stream()
+                .sorted(Comparator.comparing(InscricaoEntity::getDataInscricao).reversed())
+                .map(subscription -> {
+                    var activity = subscription.getAtividade();
+                    if (activity == null) {
+                        return null;
+                    }
+                    return new VolunteerSubscriptionResponse(
+                            subscription.getId(),
+                            subscription.getDataInscricao(),
+                            subscription.getStatus(),
+                            new InfoActivitySubscription(
+                                    activity.getId(),
+                                    activity.getNomeAtividade()
+                            )
+                    );
+                })
+                .filter(Objects::nonNull)
+                .toList();
     }
 
     @Transactional

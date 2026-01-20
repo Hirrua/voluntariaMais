@@ -4,7 +4,6 @@ import type { ChangeEvent, FormEvent } from "react";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import FormField from "@/components/FormField";
-import SimpleNavbar from "@/components/SimpleNavbar";
 import { ONG_DRAFT_KEY, ONG_LOGO_KEY } from "@/lib/createFlowStorage";
 
 type OngDraft = {
@@ -121,8 +120,6 @@ export default function CriarOngPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      <SimpleNavbar />
-
       <main className="mx-auto max-w-6xl px-6 pb-20 pt-10">
         <h1 className="mb-8 text-xl font-semibold text-[#2A2599]">
           Informações sobre a ONG

@@ -1,5 +1,5 @@
 import api from "@/lib/api";
-import { CreateOngRequest, OngDTO } from "@/types/ong";
+import { CreateOngRequest, OngDTO, UpdateOngRequest } from "@/types/ong";
 import { OngInfoWithProjects } from "@/types/ongInfo";
 
 interface GetOngsParams {
@@ -47,10 +47,24 @@ export const ongService = {
     return response.data
   },
 
+  async getMyOng(): Promise<OngInfoWithProjects> {
+    const response = await api.get<OngInfoWithProjects>("/me/ong");
+    return response.data;
+  },
+
   async createOng(payload: CreateOngRequest): Promise<{ message: string; id?: number }> {
     const response = await api.post<string>("/ong", payload);
     const id = extractIdFromLocation(response.headers?.location);
     return { message: response.data, id };
+  },
+
+  async updateOng(id: number, payload: UpdateOngRequest): Promise<void> {
+    await api.put(`/ong/${id}`, payload);
+  },
+
+  async updateMyOng(payload: UpdateOngRequest): Promise<OngInfoWithProjects> {
+    const response = await api.patch<OngInfoWithProjects>("/me/ong", payload);
+    return response.data;
   },
 
   async uploadOngLogo(ongId: number, file: File): Promise<string> {

@@ -17,7 +17,7 @@ import com.svg.voluntariado.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -90,6 +90,12 @@ public class OngService {
         return ongMapper.toInfoOngResponse(ong);
     }
 
+    @Transactional(readOnly = true)
+    public InfoOngAndProjectResponse getForAdmin(Long adminId) {
+        OngEntity ong = getOngByAdminId(adminId);
+        return withPublicUrl(ongMapper.toInfoOngAndProjectResponse(ong));
+    }
+
     public InfoOngAndProjectResponse findOngAndProjects(Long idOng, Long requesterId, boolean isAdminOng, boolean isAdminPlataforma) {
         var ongEntity = ongRepository.findById(idOng)
                 .orElseThrow(OngNotFoundException::new);
@@ -129,27 +135,37 @@ public class OngService {
         return ongMapper.toListOngResponse(ongEntities);
     }
 
-    public InfoOngResponse update(Long idOng, Long idAdmin, boolean isAdminPlataforma, UpdateInfoOngRequest updateInfoOngRequest) {
+    @Transactional
+    public InfoOngResponse update(Long idOng, Long idAdmin, UpdateInfoOngRequest updateInfoOngRequest) {
         var ong = ongRepository.findById(idOng)
                 .orElseThrow(OngNotFoundException::new);
 
-        if (!isAdminPlataforma && !ong.getUsuarioResponsavel().getId().equals(idAdmin)) {
-            throw new BadCredentialsException("Somente o admin da ong pode realizar alterações");
+        if (!ong.getUsuarioResponsavel().getId().equals(idAdmin)) {
+            throw new AccessDeniedException("Acesso negado.");
         }
 
         var ongEntity = ongMapper.toOngEntity(updateInfoOngRequest, ong);
-        return ongMapper.toInfoOngResponse(ongEntity);
+        var saved = ongRepository.save(ongEntity);
+        return ongMapper.toInfoOngResponse(saved);
     }
 
-    public void delete(Long idOng, Long idAdmin, boolean isAdminPlataforma) {
+    public void delete(Long idOng, Long idAdmin) {
         var ong = ongRepository.findById(idOng)
                 .orElseThrow(OngNotFoundException::new);
 
-        if (!isAdminPlataforma && !ong.getUsuarioResponsavel().getId().equals(idAdmin)) {
-            throw new BadCredentialsException("Somente o admin da ong pode realizar alterações");
+        if (!ong.getUsuarioResponsavel().getId().equals(idAdmin)) {
+            throw new AccessDeniedException("Acesso negado.");
         }
 
         ongRepository.delete(ong);
+    }
+
+    @Transactional
+    public InfoOngAndProjectResponse updateForAdmin(Long adminId, UpdateInfoOngRequest updateInfoOngRequest) {
+        var ong = getOngByAdminId(adminId);
+        var ongEntity = ongMapper.toOngEntity(updateInfoOngRequest, ong);
+        var saved = ongRepository.save(ongEntity);
+        return withPublicUrl(ongMapper.toInfoOngAndProjectResponse(saved));
     }
 
     private InfoOngAndProjectResponse withPublicUrl(InfoOngAndProjectResponse response) {
@@ -170,6 +186,11 @@ public class OngService {
                 response.endereco(),
                 projects
         );
+    }
+
+    private OngEntity getOngByAdminId(Long adminId) {
+        return ongRepository.findByUsuarioResponsavelId(adminId)
+                .orElseThrow(OngNotFoundException::new);
     }
 
     private SimpleInfoProjectResponse withPublicUrl(SimpleInfoProjectResponse response) {

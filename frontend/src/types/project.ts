@@ -9,7 +9,6 @@ export interface ProjectDTO {
 }
 
 export interface CreateProjectRequest {
-  idOng: number;
   nome: string;
   descricaoDetalhada: string;
   objetivo: string;

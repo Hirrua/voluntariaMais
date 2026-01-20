@@ -2,9 +2,8 @@
 
 import type { ChangeEvent, FormEvent } from "react";
 import { useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import FormField from "@/components/FormField";
-import SimpleNavbar from "@/components/SimpleNavbar";
 import { activityService } from "@/services/activityService";
 import { LAST_PROJECT_ID_KEY } from "@/lib/createFlowStorage";
 
@@ -46,11 +45,11 @@ const toOffsetDateTime = (value: string) => {
 };
 
 export default function CriarAtividadePage() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const [formData, setFormData] = useState<ActivityDraft>(emptyDraft);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
 
   useEffect(() => {
     const projetoIdParam = searchParams.get("projetoId");
@@ -74,10 +73,9 @@ export default function CriarAtividadePage() {
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError(null);
-    setSuccess(null);
 
     if (!formData.idProjeto.trim()) {
-      setError("Informe o ID do projeto.");
+      setError("Nao foi possivel identificar o projeto.");
       return;
     }
     if (!formData.nomeAtividade.trim()) {
@@ -128,17 +126,15 @@ export default function CriarAtividadePage() {
         localAtividade: formData.localAtividade,
         vagasTotais: vagas,
       });
-      setSuccess(response.message || "Atividade criada com sucesso.");
-      setFormData((prev) => ({
-        ...emptyDraft,
-        idProjeto: prev.idProjeto,
-      }));
+      window.alert(response.message || "Atividade criada com sucesso.");
+      router.push("/");
     } catch (err: any) {
-      setError(
+      const message =
         err?.response?.data?.message ||
-          err?.response?.data ||
-          "Não foi possível criar a atividade."
-      );
+        err?.response?.data ||
+        "Nao foi possivel criar a atividade.";
+      window.alert(message);
+      router.push("/");
     } finally {
       setLoading(false);
     }
@@ -146,8 +142,6 @@ export default function CriarAtividadePage() {
 
   return (
     <div className="min-h-screen bg-white">
-      <SimpleNavbar />
-
       <main className="mx-auto max-w-6xl px-6 pb-20 pt-10">
         <h1 className="mb-8 text-xl font-semibold text-[#2A2599]">
           Informações sobre a atividade
@@ -215,18 +209,6 @@ export default function CriarAtividadePage() {
             </div>
 
             <div className="space-y-6 md:border-l md:border-[#B8B5FF] md:pl-12">
-              <FormField label="ID do projeto" htmlFor="idProjeto">
-                <input
-                  id="idProjeto"
-                  type="number"
-                  value={formData.idProjeto}
-                  onChange={handleChange("idProjeto")}
-                  className={inputClass}
-                  min={1}
-                  required
-                />
-              </FormField>
-
               <FormField label="Número de vagas" htmlFor="vagasTotais">
                 <input
                   id="vagasTotais"
@@ -251,7 +233,6 @@ export default function CriarAtividadePage() {
           </div>
 
           {error && <p className="text-sm text-red-500">{error}</p>}
-          {success && <p className="text-sm text-green-600">{success}</p>}
         </form>
       </main>
     </div>

@@ -36,8 +36,19 @@ public class SubscriptionController {
     @Operation(summary = "Buscar inscrições")
     @GetMapping("/{idAtividade}")
     @PreAuthorize("hasRole('ADMIN_ONG')")
-    public ResponseEntity<?> getSubscription(@PathVariable(value = "idAtividade") Long idAtividade) throws ActivityNotFoundException {
-        var sub = subscriptionService.getByActivity(idAtividade);
+    public ResponseEntity<?> getSubscription(@PathVariable(value = "idAtividade") Long idAtividade,
+                                             @AuthenticationPrincipal Jwt principal) throws ActivityNotFoundException {
+        Long idAdmin = Long.parseLong(principal.getSubject());
+        var sub = subscriptionService.getByActivity(idAtividade, idAdmin);
+        return ResponseEntity.ok().body(sub);
+    }
+
+    @Operation(summary = "Buscar inscrições do voluntário logado")
+    @GetMapping("/me")
+    @PreAuthorize("hasRole('VOLUNTARIO')")
+    public ResponseEntity<?> getMySubscriptions(@AuthenticationPrincipal Jwt principal) {
+        Long idUser = Long.parseLong(principal.getSubject());
+        var sub = subscriptionService.getByUser(idUser);
         return ResponseEntity.ok().body(sub);
     }
 

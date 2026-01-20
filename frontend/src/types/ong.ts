@@ -9,6 +9,15 @@ export interface OngDTO {
   dataFundacao: string;
 }
 
+export interface UpdateOngRequest {
+  nomeOng: string;
+  descricao: string;
+  emailContatoOng: string;
+  telefoneOng?: string;
+  website?: string;
+  logoUrl?: string;
+}
+
 export interface CreateOngRequest {
   idUsuarioResponsavel: number;
   nomeOng: string;

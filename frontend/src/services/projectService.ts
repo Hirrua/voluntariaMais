@@ -29,7 +29,7 @@ export const projectService = {
   async createProject(
     payload: CreateProjectRequest
   ): Promise<{ message: string; id?: number }> {
-    const response = await api.post<string>("/projetos", payload);
+    const response = await api.post<string>("/me/projetos", payload);
     const id = extractIdFromLocation(response.headers?.location);
     return { message: response.data, id };
   },

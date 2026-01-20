@@ -23,6 +23,13 @@ export interface SubscriptionResponse {
   infoUserSubscription: InfoUserSubscription;
 }
 
+export interface VolunteerSubscriptionResponse {
+  id: number;
+  dataInscricao: string;
+  statusInscricaoEnum: StatusInscricaoEnum;
+  infoActivitySubscription: InfoActivitySubscription;
+}
+
 export interface EnderecoEntity {
   logradouro: string;
   bairro: string;

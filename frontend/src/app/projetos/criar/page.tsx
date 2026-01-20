@@ -2,16 +2,11 @@
 
 import type { ChangeEvent, FormEvent } from "react";
 import { useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import FormField from "@/components/FormField";
-import SimpleNavbar from "@/components/SimpleNavbar";
-import {
-  LAST_ONG_ID_KEY,
-  PROJECT_DRAFT_KEY,
-} from "@/lib/createFlowStorage";
+import { PROJECT_DRAFT_KEY } from "@/lib/createFlowStorage";
 
 type ProjectDraft = {
-  idOng: string;
   nome: string;
   objetivo: string;
   publicoAlvo: string;
@@ -21,7 +16,6 @@ type ProjectDraft = {
 };
 
 const emptyDraft: ProjectDraft = {
-  idOng: "",
   nome: "",
   objetivo: "",
   publicoAlvo: "",
@@ -36,7 +30,6 @@ const textareaClass = `${inputClass} min-h-[160px] resize-none`;
 
 export default function CriarProjetoPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const [formData, setFormData] = useState<ProjectDraft>(emptyDraft);
   const [error, setError] = useState<string | null>(null);
 
@@ -50,18 +43,7 @@ export default function CriarProjetoPage() {
         sessionStorage.removeItem(PROJECT_DRAFT_KEY);
       }
     }
-
-    const ongIdParam = searchParams.get("ongId");
-    if (ongIdParam) {
-      setFormData((prev) => ({ ...prev, idOng: ongIdParam }));
-      return;
-    }
-
-    const lastOngId = sessionStorage.getItem(LAST_ONG_ID_KEY);
-    if (lastOngId) {
-      setFormData((prev) => ({ ...prev, idOng: lastOngId }));
-    }
-  }, [searchParams]);
+  }, []);
 
   const handleChange =
     (field: keyof ProjectDraft) =>
@@ -73,10 +55,6 @@ export default function CriarProjetoPage() {
     event.preventDefault();
     setError(null);
 
-    if (!formData.idOng.trim()) {
-      setError("Informe o ID da ONG.");
-      return;
-    }
     if (!formData.nome.trim()) {
       setError("Informe o nome do projeto.");
       return;
@@ -88,8 +66,6 @@ export default function CriarProjetoPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      <SimpleNavbar />
-
       <main className="mx-auto max-w-6xl px-6 pb-20 pt-10">
         <h1 className="mb-8 text-xl font-semibold text-[#2A2599]">
           Informações sobre o projeto
@@ -98,18 +74,6 @@ export default function CriarProjetoPage() {
         <form onSubmit={handleSubmit} className="space-y-8">
           <div className="grid gap-12 md:grid-cols-2">
             <div className="space-y-6">
-              <FormField label="ID da ONG" htmlFor="idOng">
-                <input
-                  id="idOng"
-                  type="number"
-                  value={formData.idOng}
-                  onChange={handleChange("idOng")}
-                  className={inputClass}
-                  min={1}
-                  required
-                />
-              </FormField>
-
               <FormField label="Nome do projeto" htmlFor="nomeProjeto">
                 <input
                   id="nomeProjeto"

@@ -50,16 +50,12 @@ public class ProjectService {
     }
 
     @Transactional
-    public Long create(CreateProjectRequest createProjectRequest, Long idAdmin, boolean isAdminPlataforma) {
-        var ong = ongRepository.findById(createProjectRequest.idOng())
+    public Long create(CreateProjectRequest createProjectRequest, Long idAdmin) {
+        var ong = ongRepository.findByUsuarioResponsavelId(idAdmin)
                 .orElseThrow(OngNotFoundException::new);
 
         if (!StatusAprovacaoOngEnum.APROVADA.equals(ong.getStatus())) {
             throw new AccessDeniedException("A ONG precisa estar aprovada para criar projetos.");
-        }
-
-        if (!isAdminPlataforma && !ong.getUsuarioResponsavel().getId().equals(idAdmin)) {
-            throw new AccessDeniedException("Apenas o admin da ong pode editar.");
         }
 
         var projeto = projectMapper.toProjetoEntity(createProjectRequest);
@@ -69,8 +65,26 @@ public class ProjectService {
     }
 
     @Transactional(readOnly = true)
+    public List<ProjectAdminResponse> listForAdmin(Long adminId) {
+        var projetos = projectRepository.findByOngUsuarioResponsavelId(adminId, PageRequest.of(0, 100)).getContent();
+        return projetos.stream()
+                .map(this::toAdminResponse)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public ProjectAdminResponse getForAdmin(Long projectId, Long adminId) {
+        var projeto = projectRepository.findById(projectId).orElseThrow(ProjectNotFoundException::new);
+        var ong = projeto.getOng();
+        if (ong == null || !ong.getUsuarioResponsavel().getId().equals(adminId)) {
+            throw new AccessDeniedException("Acesso negado.");
+        }
+        return toAdminResponse(projeto);
+    }
+
+    @Transactional(readOnly = true)
     public PageResponse<SimpleInfoProjectResponse> getAll(int page, int itens) {
-        var projetos = projectRepository.findAll(PageRequest.of(page, itens));
+        var projetos = projectRepository.findAllByOngStatus(StatusAprovacaoOngEnum.APROVADA, PageRequest.of(page, itens));
 
         if (projetos.isEmpty()) {
             return PageResponse.empty(page, itens);
@@ -133,12 +147,12 @@ public class ProjectService {
     }
 
     @Transactional
-    public UpdateProjectResponse update(Long idProjeto, Long idAdmin, boolean isAdminPlataforma, UpdateProjectRequest updateProjectRequest) {
+    public UpdateProjectResponse update(Long idProjeto, Long idAdmin, UpdateProjectRequest updateProjectRequest) {
         var projeto = projectRepository.findById(idProjeto).orElseThrow(ProjectNotFoundException::new);
         var ong = ongRepository.findById(projeto.getOng().getId())
                 .orElseThrow(OngNotFoundException::new);
 
-        if (!isAdminPlataforma && !ong.getUsuarioResponsavel().getId().equals(idAdmin)) {
+        if (!ong.getUsuarioResponsavel().getId().equals(idAdmin)) {
             throw new AccessDeniedException("Apenas o admin da ong pode editar.");
         }
 
@@ -149,18 +163,39 @@ public class ProjectService {
     }
 
     @Transactional
-    public void delete(Long idProjeto, Long idAdmin, boolean isAdminPlataforma) {
+    public ProjectAdminResponse updateForAdmin(Long projectId, Long adminId, UpdateProjectRequest updateProjectRequest) {
+        var projeto = projectRepository.findById(projectId).orElseThrow(ProjectNotFoundException::new);
+        var ong = projeto.getOng();
+        if (ong == null || !ong.getUsuarioResponsavel().getId().equals(adminId)) {
+            throw new AccessDeniedException("Acesso negado.");
+        }
+        var projetoMap = projectMapper.toProjetoEntity(updateProjectRequest, projeto);
+        projetoMap.setDataAtualizacao(OffsetDateTime.now());
+        projectRepository.save(projetoMap);
+        return toAdminResponse(projetoMap);
+    }
+
+    @Transactional
+    public void delete(Long idProjeto, Long idAdmin) {
         var projeto = projectRepository.findById(idProjeto).orElseThrow(ProjectNotFoundException::new);
 
-        if (!isAdminPlataforma) {
-            var ong = ongRepository.findById(projeto.getOng().getId())
-                    .orElseThrow(OngNotFoundException::new);
+        var ong = ongRepository.findById(projeto.getOng().getId())
+                .orElseThrow(OngNotFoundException::new);
 
-            if (!ong.getUsuarioResponsavel().getId().equals(idAdmin)) {
-                throw new AccessDeniedException("Apenas o admin da ong pode excluir.");
-            }
+        if (!ong.getUsuarioResponsavel().getId().equals(idAdmin)) {
+            throw new AccessDeniedException("Apenas o admin da ong pode excluir.");
         }
 
+        projectRepository.delete(projeto);
+    }
+
+    @Transactional
+    public void deleteForAdmin(Long projectId, Long adminId) {
+        var projeto = projectRepository.findById(projectId).orElseThrow(ProjectNotFoundException::new);
+        var ong = projeto.getOng();
+        if (ong == null || !ong.getUsuarioResponsavel().getId().equals(adminId)) {
+            throw new AccessDeniedException("Acesso negado.");
+        }
         projectRepository.delete(projeto);
     }
 
@@ -184,6 +219,23 @@ public class ProjectService {
                 response.dataInicioPrevista(),
                 response.dataFimPrevista(),
                 response.dataAtualizacao()
+        );
+    }
+
+    private ProjectAdminResponse toAdminResponse(ProjetoEntity entity) {
+        return new ProjectAdminResponse(
+                entity.getId(),
+                entity.getNome(),
+                entity.getStatus(),
+                entity.getObjetivo(),
+                entity.getDescricaoDetalhada(),
+                entity.getPublicoAlvo(),
+                entity.getDataInicioPrevista(),
+                entity.getDataFimPrevista(),
+                entity.getEndereco(),
+                storageService.buildPublicUrl(entity.getUrlImagemDestaque()),
+                entity.getDataCriacao(),
+                entity.getDataAtualizacao()
         );
     }
 }
