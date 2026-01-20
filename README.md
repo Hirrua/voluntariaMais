@@ -8,8 +8,7 @@ ideais para cada iniciativa e objetivo.*
 
 ## Status do projeto
 - [x] Back-end - (01/08/2025)
-- [ ] Front-end - *desenvolvimento*
-- [ ] Infraestrutura cloud - *stand by*
+- [x] Front-end - (20/01/2026)
 
 > O projeto está em constante evolução com novas funcionalidades e tecnologias, acompanhe o desenvolvimento!
 
