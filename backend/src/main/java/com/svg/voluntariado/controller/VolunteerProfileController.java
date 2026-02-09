@@ -69,7 +69,7 @@ public class VolunteerProfileController {
 
     @GetMapping("/users/me")
     public ResponseEntity<UserInfoDTO> getCurrentUser(@AuthenticationPrincipal Jwt authentication) {
-        var currentUser = userRepository.findByIdIfProfileExists(Long.parseLong(authentication.getSubject())).orElseThrow(UserNotFoundException::new);
+        var currentUser = userRepository.findByIdWithRoles(Long.parseLong(authentication.getSubject())).orElseThrow(UserNotFoundException::new);
         var roles = currentUser.getRoles().stream()
                 .map(role -> role.getNome())
                 .toList();
