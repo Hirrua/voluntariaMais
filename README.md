@@ -27,7 +27,7 @@ que achar melhor.
   docker-compose up -d
 ```
 4. Após subir o docker-compose é necessário o ngrok para envio dos e-mails.
-``shell
+```shell
   ngrok http --url <URL_NGROK> 8080
 ```
 
