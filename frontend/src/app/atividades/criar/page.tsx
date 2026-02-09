@@ -1,7 +1,7 @@
 "use client";
 
 import type { ChangeEvent, FormEvent } from "react";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import FormField from "@/components/FormField";
 import { activityService } from "@/services/activityService";
@@ -44,7 +44,7 @@ const toOffsetDateTime = (value: string) => {
   return `${value}:00${sign}${offsetHours}:${offsetRest}`;
 };
 
-export default function CriarAtividadePage() {
+function CriarAtividadePageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [formData, setFormData] = useState<ActivityDraft>(emptyDraft);
@@ -236,5 +236,13 @@ export default function CriarAtividadePage() {
         </form>
       </main>
     </div>
+  );
+}
+
+export default function CriarAtividadePage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-white" />}>
+      <CriarAtividadePageContent />
+    </Suspense>
   );
 }

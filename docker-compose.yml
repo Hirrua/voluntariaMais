@@ -1,0 +1,70 @@
+services:
+  postgres_ong:
+    image: postgres:15-alpine
+    env_file:
+      - ./backend/.env
+    restart: always
+    ports:
+      - "5433:5432"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U $${POSTGRES_USER}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - postgres_data_ong:/var/lib/postgresql/data
+    networks:
+      - ong_network
+
+  pgadmin_ong:
+    image: dpage/pgadmin4:9.3
+    env_file:
+      - ./backend/.env
+    restart: always
+    ports:
+      - "15432:80"
+    volumes:
+      - pgadmin_data_ong:/var/lib/pgadmin
+    depends_on:
+      postgres_ong:
+        condition: service_healthy
+    networks:
+      - ong_network
+
+  app:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres_ong:
+        condition: service_healthy
+    env_file:
+      - ./backend/.env
+    dns:
+      - 1.1.1.1
+      - 8.8.8.8
+    networks:
+      - ong_network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    depends_on:
+      - app
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+    networks:
+      - ong_network
+
+volumes:
+  postgres_data_ong:
+  pgadmin_data_ong:
+
+networks:
+  ong_network:

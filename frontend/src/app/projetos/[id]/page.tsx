@@ -155,8 +155,12 @@ export default function PainelAtividadePage() {
 
     try {
       const response = await subscriptionService.create(activityId)
-      if (response.id) {
-        setSubscriptionIds((prev) => ({ ...prev, [activityId]: response.id }))
+      const createdSubscriptionId = response.id
+      if (typeof createdSubscriptionId === "number") {
+        setSubscriptionIds((prev) => ({
+          ...prev,
+          [activityId]: createdSubscriptionId,
+        }))
       }
       setActionMessages((prev) => ({
         ...prev,
