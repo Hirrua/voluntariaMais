@@ -107,3 +107,5 @@ que achar melhor.
 - Spring Boot Mail (Java Mail Sender)
 - Thymeleaf
 - MapStruct
+- Next.JS
+- Tailwind
