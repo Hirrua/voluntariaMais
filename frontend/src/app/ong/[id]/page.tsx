@@ -99,7 +99,12 @@ export default function PainelOngPage() {
     fetchOngInfo()
   }, [ongId])
 
-  const projects = useMemo(() => ongInfo?.projectResponse ?? [], [ongInfo])
+  const projects = useMemo(() => {
+    if (!ongInfo || ongInfo.status !== "APROVADA") {
+      return []
+    }
+    return ongInfo.projectResponse ?? []
+  }, [ongInfo])
 
   if (loading) {
     return (

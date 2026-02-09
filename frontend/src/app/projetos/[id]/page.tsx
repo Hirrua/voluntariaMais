@@ -8,6 +8,7 @@ import Footer from "@/components/Footer"
 import Navbar from "@/components/Navbar"
 import PageContainer from "@/components/PageContainer"
 import { authService } from "@/services/authService"
+import { ongService } from "@/services/ongService"
 import { projectInfoService } from "@/services/projectInfoService"
 import { subscriptionService } from "@/services/subscriptionService"
 import { componentTokens, layoutTokens, typographyTokens } from "@/styles/tokens"
@@ -99,6 +100,15 @@ export default function PainelAtividadePage() {
         setLoading(true)
         setError(null)
         const data = await projectInfoService.getProjectAndActivities(projectId)
+        const ongId = data.ongContextResponse?.id
+        if (ongId) {
+          const ongData = await ongService.getOngWithProjects(ongId)
+          if (ongData.status !== "APROVADA") {
+            setProjectInfo(null)
+            setError("Projeto indisponivel.")
+            return
+          }
+        }
         setProjectInfo(data)
       } catch (err) {
         setError(getErrorMessage(err))

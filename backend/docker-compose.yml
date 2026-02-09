@@ -54,9 +54,10 @@ services:
       CLOUDFLARE_R2_BUCKET: ${CLOUDFLARE_R2_BUCKET}
       CLOUDFLARE_R2_PUBLIC_URL: ${CLOUDFLARE_R2_PUBLIC_URL}
       ADMIN_PLATFORM: ${ADMIN_PLATFORM}
+      JAVA_TOOL_OPTIONS: "-Dnetworkaddress.cache.ttl=60 -Dnetworkaddress.cache.negative.ttl=0 -Djava.net.preferIPv4Stack=true"
     dns:
       - 1.1.1.1
-      - 8.8.8.8
+      - 1.0.0.1
     networks:
       - ong_network
 

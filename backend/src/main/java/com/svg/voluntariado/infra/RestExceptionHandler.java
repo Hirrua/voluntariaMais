@@ -7,6 +7,10 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
+import software.amazon.awssdk.core.exception.SdkClientException;
+import software.amazon.awssdk.services.s3.model.S3Exception;
+
+import java.net.UnknownHostException;
 
 @ControllerAdvice
 public class RestExceptionHandler extends ResponseEntityExceptionHandler {
@@ -93,5 +97,30 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     private ResponseEntity<RestErrorMessage> accessDeniedHandler(AccessDeniedException exception) {
         RestErrorMessage exceptionResponse = new RestErrorMessage(HttpStatus.FORBIDDEN, "Acesso negado.");
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(exceptionResponse);
+    }
+
+    @ExceptionHandler(S3Exception.class)
+    private ResponseEntity<RestErrorMessage> storageHandler(S3Exception exception) {
+        String message;
+        if (exception.statusCode() == HttpStatus.UNAUTHORIZED.value()
+                || exception.statusCode() == HttpStatus.FORBIDDEN.value()) {
+            message = "Falha de autenticacao no armazenamento de arquivos. Verifique as credenciais/permissoes do bucket.";
+        } else {
+            message = "Falha ao comunicar com o armazenamento de arquivos.";
+        }
+
+        RestErrorMessage exceptionResponse = new RestErrorMessage(HttpStatus.BAD_GATEWAY, message);
+        return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body(exceptionResponse);
+    }
+
+    @ExceptionHandler(SdkClientException.class)
+    private ResponseEntity<RestErrorMessage> sdkClientHandler(SdkClientException exception) {
+        String message = "Falha de conectividade com o armazenamento de arquivos.";
+        if (exception.getCause() instanceof UnknownHostException) {
+            message = "Falha de DNS ao resolver o endpoint do armazenamento de arquivos.";
+        }
+
+        RestErrorMessage exceptionResponse = new RestErrorMessage(HttpStatus.BAD_GATEWAY, message);
+        return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body(exceptionResponse);
     }
 }

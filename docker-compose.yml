@@ -42,9 +42,11 @@ services:
         condition: service_healthy
     env_file:
       - ./backend/.env
+    environment:
+      JAVA_TOOL_OPTIONS: "-Dnetworkaddress.cache.ttl=60 -Dnetworkaddress.cache.negative.ttl=0 -Djava.net.preferIPv4Stack=true"
     dns:
       - 1.1.1.1
-      - 8.8.8.8
+      - 1.0.0.1
     networks:
       - ong_network
 
