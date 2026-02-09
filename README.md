@@ -113,3 +113,12 @@ que achar melhor.
 - MapStruct
 - Next.JS
 - Tailwind
+
+## Projeto finalizado
+> Aqui consta apenas algumas telas do projeto, para uma visualização do resultado final.
+
+<img width="1914" height="933" alt="login" src="https://github.com/user-attachments/assets/495d77f3-55e9-4830-90a5-d314fa3c37d6" />
+<img width="1914" height="933" alt="info_home" src="https://github.com/user-attachments/assets/c9c2108d-66a6-4472-9378-cdde549dfc80" />
+<img width="1914" height="933" alt="info_projeto" src="https://github.com/user-attachments/assets/24596c48-3dab-42ee-8734-1d309202e80b" />
+<img width="1914" height="933" alt="info_voluntario" src="https://github.com/user-attachments/assets/a667f87c-7571-42df-95d2-5608b34e3e20" />
+
