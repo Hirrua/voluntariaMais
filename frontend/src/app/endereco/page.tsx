@@ -1,7 +1,7 @@
 "use client";
 
 import type { ChangeEvent, FormEvent } from "react";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import FormField from "@/components/FormField";
 import {
@@ -41,7 +41,7 @@ const dataUrlToFile = async (storedLogo: StoredLogo) => {
   return new File([blob], storedLogo.name, { type: storedLogo.type });
 };
 
-export default function EnderecoPage() {
+function EnderecoPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [address, setAddress] = useState<AddressPayload>(emptyAddress);
@@ -300,5 +300,13 @@ export default function EnderecoPage() {
         </form>
       </main>
     </div>
+  );
+}
+
+export default function EnderecoPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-white" />}>
+      <EnderecoPageContent />
+    </Suspense>
   );
 }
